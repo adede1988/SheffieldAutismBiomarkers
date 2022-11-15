@@ -29,21 +29,7 @@ function [rawMeans,MI,pacSig,phasePref, MINull] = chanPAC(chanDat)
 %                   another. 
 
 %calculation generally follows phase amplitude coupling analysis presented
-%in:
-%Pack, Naples, Webb, ..., Levin, ABC-CT Network, preprint.
-%Phase-amplitude coupling in autism spectrum disorder: results from the
-%autism biomarkers consortium for clinical trials
-
-%with conceptual recommendations drawn from: 
-%Tort, Komorowski, Eichenbaum, Kopell. 2010. Measuring phase-amplitude
-%coupling between neuronal oscillations of different frequencies. J
-%Neurophysiology.
-
-%This function calculates phase amplitude coupling across a range of
-%frequencies within a single channel of electrophysiological data. 
-
-%Written by Adam Dede (adam.osman.dede@gmail.com)
-%fall, 2022
+%in Pack, Naples, Webb, ..., L
 
 
 
@@ -57,9 +43,9 @@ function [rawMeans,MI,pacSig,phasePref, MINull] = chanPAC(chanDat)
     % trial X LF X HF X phase 
     results = single(zeros(size(chanDat.data,3), length(lowFrex), length(highFrex), 18));
     nullRes = single(zeros([200, size(results)]));
-
+%     tic
     for snip = 1:size(chanDat.data,3)
-
+%        disp(['pac: ' num2str(snip) ' of ' num2str(size(chanDat.data,3)) ' time: ' num2str(round(toc))])
         hz = linspace(0, chanDat.srate, size(chanDat.data,2)*3 );
         snipDat = chanDat.data(:,:,snip);
         padDat = flip(snipDat,2);

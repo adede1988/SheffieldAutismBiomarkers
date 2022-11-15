@@ -29,13 +29,7 @@ function [slopeValsLog, slopeValsRel, alphaPeakLog, alphaPeakRel] = chanSlopeAlp
 % Journal of Neuroscience 23 September 2015, 35 (38) 13257-13265
 
 %calculations for alpha peak frequency follow those presented by: 
-% Dickinson A, DiStefano C, Senturk D, Jeste SS. Peak alpha frequency is a 
-% neural marker of cognitive function across the autism spectrum. 
-% Eur J Neurosci. 2018 Mar;47(6):643-651. doi: 10.1111/ejn.13645. 
-% Epub 2017 Aug 1. PMID: 28700096; PMCID: PMC5766439.
-
-%written by Adam Dede (adam.osman.dede@gmail.com)
-%fall 2022
+Dickinson A, DiStefano C, Senturk D, Jeste SS. Peak alpha frequency is a neural marker of cognitive function across the autism spectrum. Eur J Neurosci. 2018 Mar;47(6):643-651. doi: 10.1111/ejn.13645. Epub 2017 Aug 1. PMID: 28700096; PMCID: PMC5766439.
 
 
 warning('off','all')

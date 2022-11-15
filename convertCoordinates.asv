@@ -7,20 +7,7 @@ function [EEG] = convertCoordinates(EEG, standardLocs, dataSet)
 %                       be in degrees. 
 %       dataSet         String labeling the dataSet. Some datasets have 
 %                       the assumption that the nose is 0 degrees, but 
-%                       others are rotated by 90 degrees. Specifying dataSet 
-%                       allows for customization of rotation if needed  
-
-%output:
-%       EEG             eeglab struct augmented with standardized electrode
-%                       locations, interpolated data to the new standard
-%                       montage, and Laplacian transformed data
-
-%NOTE: interpolation and Laplacian transform rely on functions
-%interpolate_perrinX and laplacian_perrinX which were written by Michael X.
-%Cohen
-
-%written by Adam Dede (adam.osman.dede@gmail.com)
-%fall 2022
+%                       others are rotated by 90 degrees. Specifying dataSet allows for customization   
 
 
     if ~isfield(EEG, 'dataSTD')

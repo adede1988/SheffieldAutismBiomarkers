@@ -1,5 +1,31 @@
 function [nbChanOrig, nbChanFinal, nbTrialOrig, nbTrialFinal, EEG] = removeNoiseChansVolt(EEG, path)
 
+%input: 
+%       EEG             EEGlab struct with one subject's data
+%       path            file path of where the data came from
+
+%output: 
+%       nbChanOrig      original number of channels in the dataset
+%       nbChanFinal     final number of channels after cleaning
+%       nbTrialOrig     original number of trials in the dataset
+%       nbTrialFinal    final number of trials in the dataset
+
+%this function calculates the maximum observed deflection in a sliding 80ms
+%window across each trial for each channel in the data
+%noise channels are defined as channels that have over 50% of their trials
+%with max deflections of greater than 100uV
+%noise trials are defined as trials that have over 25% of their channels
+%with max deflections of greater than 100uV deflections
+
+%in general, noise channels are removed first. However, if over 25% of
+%channels are flagged as noise, then trials with 75% of channels with max
+%deflections of greater than 100uV are removed first.
+
+%written by Adam Dede (adam.osman.dede@gmail.com)
+%summer 2022
+
+
+
 if ~isfield(EEG, 'noiseRemoved')
     datMean = squeeze(std(EEG.data,[],[1,2])); 
     EEG.data(:,:,datMean==0) = []; 
@@ -20,11 +46,7 @@ if ~isfield(EEG, 'noiseRemoved')
         end
     end
     
-%     overallSTD = std(EEG.data,[], [1,2,3]);
-%     overallMean = mean(EEG.data, [1,2,3]);
-    
-    %z-score it
-%     maxDeflection = (maxDeflection - overallMean) ./ overallSTD; 
+
 
 
     %remove channels where over 50% of trials involve a max deflection of
