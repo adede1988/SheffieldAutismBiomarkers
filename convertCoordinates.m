@@ -61,7 +61,7 @@ function [EEG] = convertCoordinates(EEG, standardLocs, dataSet)
     %% convert coordinates for wanted standard electrode positions to X,Y,Z on unit circle
 
     %'standard' locations were found to be misaligned. I fixed this with a
-    %hack: rotate the standard map by -pi/2
+    %hack: rotate the standard map by pi/2 for some datasets. This needs to be checked for each dataset
 
     if strcmp(dataSet, 'femaleASD')
         adjFact = 0; 
