@@ -68,7 +68,7 @@ function [EEG] = convertCoordinates(EEG, standardLocs, dataSet)
     elseif strcmp(dataSet, 'biomarkCon')
         adjFact = 0; 
     else
-        adjFact = pi/2; 
+        adjFact = pi/2; %%%% NOTE TO MEHMET: the dataset you are working with needs pi/2 adjustment factor!!! 
     end
 
     %note assumption here that standardLocs contains theta and phi
