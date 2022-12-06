@@ -12,20 +12,36 @@ library(circular)
 test <- read.csv("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\autismBiomarkersAllData2.csv")
 test$nbChanOrig[test$nbChanOrig==999] = 124
 
-dat <- filter(test, group %in% c('CON', 'AD', 'ASD'), eyes == 'open', age<250, nbChanFinal/nbChanOrig >= .5, nbChanOrig>20)
+dat <- filter(test, group %in% c('CON', 'AD', 'ASD'), eyes == 'open', nbChanFinal/nbChanOrig >= .5, nbChanOrig>20)
 
 setwd("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures")
 
 #### some descriptives about the overall data set ####
-png("main_AB.png",         # File name
+png("ageAll.png",         # File name
     width=1024, height=768)# Color
 ggplot(dat, aes(x = age, color = group, fill = group)) + geom_histogram()
 rect(1, 5, 3, 7, col="white")
 dev.off()
 
-ggplot(dat, aes(x = age, color = dataSet, fill = dataSet)) + geom_histogram()
+dat <- filter(test, group %in% c('CON', 'AD', 'ASD'), eyes == 'open', age<250, nbChanFinal/nbChanOrig >= .5, nbChanOrig>20)
 
+png("ageYoung.png",         # File name
+    width=1024, height=768)# Color
+ggplot(dat, aes(x = age, color = group, fill = group)) + geom_histogram()
+rect(1, 5, 3, 7, col="white")
+dev.off()
+
+png("ageDatSet.png",         # File name
+    width=1024, height=768)
+ggplot(dat, aes(x = age, color = dataSet, fill = dataSet)) + geom_histogram()
+rect(1, 5, 3, 7, col="white")
+dev.off()
+
+png("sex.png",         # File name
+    width=1024, height=768)
 ggplot(dat, aes(x = sex, color = group, fill = group)) + geom_bar()
+rect(1, 5, 3, 7, col="white")
+dev.off()
 
 ageGroups = quantile(filter(dat, group %in% c('AD', 'ASD'))$age , c(0,.33333,.666666,1.0))
 ageGroups[1]= 0
@@ -489,7 +505,7 @@ theme_set(theme_gray(base_size = 30))
 #### plotting the effect size values ####
 thresh = .00
 predNames = c('age', 'sex', 'IQ', 'Diag')
-ageGroups = c(1,2,3)
+
 
 for(vari in 1:4){
   for(agei in 1:3){
@@ -502,8 +518,8 @@ for(vari in 1:4){
       coord_cartesian(xlim=c(0,.6500001),ylim = c(0,100)) +
       theme_classic(base_size = 30)+
       theme(axis.ticks.length=unit(-0.5, "cm"),
-            axis.line = element_line(colour = 'black', size = 3),
-            axis.ticks = element_line(colour = 'black', size = 3)) + 
+            axis.line = element_line(colour = 'black', linewidth = 3),
+            axis.ticks = element_line(colour = 'black', linewidth = 3)) + 
       scale_x_continuous(expand = c(0, 0), limits = c(0, .65), breaks = seq(0,.6,.1)) +
       scale_y_continuous(expand = c(0, 0), breaks = seq(0,100,20)) + 
       geom_vline(xintercept = .05, linetype = 'dashed', size = 5)
@@ -521,16 +537,24 @@ n = length(resultsDif$age)
 allEffects = data.frame('agreement' = c(resultsDif$age, resultsDif$sex, resultsDif$IQ, resultsDif$Diag),
                         'effectSize' = c(resultsTRAIN$age, resultsTRAIN$sex, resultsTRAIN$IQ, resultsTRAIN$Diag),
                         'predictor' = c(rep('age', n), rep('sex', n), rep('IQ', n), rep('diagnosis', n)))
-outPlot <-ggplot(allEffects, aes(x=effectSize, y=agreement, color = predictor)) + 
+outPlot <-ggplot(allEffects, aes(x=agreement, y=effectSize, color = predictor)) + 
                  geom_jitter(size = 5, alpha = .5)+
-                 guides(color = guide_legend(override.aes = list(size=10))) + 
-                 xlab('effect size (\U1D702\U00B2\U209A)')
+                 theme_classic(base_size = 30)+
+                 theme(axis.ticks.length=unit(-0.5, "cm"),
+                 axis.line = element_line(colour = 'black', size = 3),
+                 axis.ticks = element_line(colour = 'black', size = 3),
+                 legend.position = c(0.67, 0.8)) + 
+                 guides(color = guide_legend(override.aes = list(size=10),
+                                             nrow=4)) + 
+                 ylab('effect size (\U1D702\U00B2\U209A)') + 
+                 scale_x_continuous(expand = c(0, 0), limits = c(0, 1.01), breaks = seq(0,1,.25)) +
+                 scale_y_continuous(expand = c(0, 0), limits = c(0, .65), breaks = seq(0,.65,.1))
 png('effect_agree_relationship.png',         # File name
-    width=1024, height=768)
+    width=400, height=768)
 print(outPlot)
 dev.off()         
 
-ggplot(filter(allEffects, predictor == 'sex'), aes(x=effect, y=agreement)) + geom_jitter()
+# ggplot(filter(allEffects, predictor == 'sex'), aes(x=effect, y=agreement)) + geom_jitter()
 
 
 #### agreement between test and train data sets in model fit effect size ####
@@ -567,7 +591,10 @@ dat2 <- dat2 %>% select(-X)
 comboDat = rbind(dat2, dat)
 predNames2 = predNames
 predNames2[4] = 'group'
-for(vari in 1:4){
+setwd("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures\\summaryFigs")
+
+## PLOTS FOR AGE! 
+vari = 1
   for(agei in 1:3){
     temp = resultsDif[resultsDif$ageGroup == agei,]
     tempRes = resultsTRAIN[resultsDif$ageGroup == agei,]
@@ -590,7 +617,9 @@ for(vari in 1:4){
     ylab(varNames[target]) +
     ggtitle(paste(varNames[target], '; age group: ', as.character(agei), sep = ''))+
     guides(color = guide_legend(override.aes = list(size=10)),
-           shape = guide_legend(override.aes = list(size=10)))
+           shape = guide_legend(override.aes = list(size=10))) + 
+    geom_vline(xintercept = ageGroups[2], linetype = 'dashed', linewidth = 2, alpha = .75)+ 
+    geom_vline(xintercept = ageGroups[3], linetype = 'dashed', linewidth = 2, alpha = .75)
   # rect(1, 5, 3, 7, col="white")
   png(paste( 'bestPredicted_',predNames[vari],'_', agei, '.png', sep = ''),         # File name
       width=1024, height=768)
@@ -598,7 +627,113 @@ for(vari in 1:4){
   dev.off()
   }
   }
+
+## PLOTS FOR SEX! 
+vari = 2
+for(agei in 1:3){
+  temp = resultsDif[resultsDif$ageGroup == agei,]
+  tempRes = resultsTRAIN[resultsDif$ageGroup == agei,]
+  candidates = which(temp[predNames[vari]] < .2 & tempRes[predNames[vari]] > thresh)
+  target = candidates[which(tempRes[candidates,predNames[vari]]==max(tempRes[candidates,predNames[vari]]))]
+  if(length(target)>0){
+    limVals = quantile(comboDat[,varNames[target]], c(.1,.9))
+    limVals = c(limVals[1] - (limVals[2]-limVals[1])*.2,
+                limVals[2] + (limVals[2]-limVals[1])*.2)
+    outPlot <- ggplot(comboDat, aes_string(x = 'age', y = varNames[target], color = 'sex', shape = 'group', size = 'IQ')) +
+      geom_jitter(alpha = .75)+
+      # scale_color_manual(values=c( "#E1C271", "#3BACDD","#4E554E"),
+      #                    labels=c(  'AD', 'ASD', 'CON')) +
+      theme_classic() +
+      theme(axis.line = element_line(color = 'black', size = 3),
+            axis.ticks = element_line(colour = "black", size = 2),
+            axis.ticks.length=unit(-.25, "cm"),
+            text = element_text(size = 20)) +
+      ylim(limVals) +
+      ylab(varNames[target]) +
+      ggtitle(paste(varNames[target], '; age group: ', as.character(agei), sep = ''))+
+      guides(color = guide_legend(override.aes = list(size=10)),
+             shape = guide_legend(override.aes = list(size=10))) + 
+      geom_vline(xintercept = ageGroups[2], linetype = 'dashed', linewidth = 2, alpha = .75)+ 
+      geom_vline(xintercept = ageGroups[3], linetype = 'dashed', linewidth = 2, alpha = .75)
+    # rect(1, 5, 3, 7, col="white")
+    png(paste( 'bestPredicted_',predNames[vari],'_', agei, '.png', sep = ''),         # File name
+        width=1024, height=768)
+    print(outPlot)
+    dev.off()
+  }
 }
+
+## PLOTS FOR IQ! 
+vari = 3
+for(agei in 1:3){
+  temp = resultsDif[resultsDif$ageGroup == agei,]
+  tempRes = resultsTRAIN[resultsDif$ageGroup == agei,]
+  candidates = which(temp[predNames[vari]] < .2 & tempRes[predNames[vari]] > thresh)
+  target = candidates[which(tempRes[candidates,predNames[vari]]==max(tempRes[candidates,predNames[vari]]))]
+  if(length(target)>0){
+    limVals = quantile(comboDat[,varNames[target]], c(.1,.9))
+    limVals = c(limVals[1] - (limVals[2]-limVals[1])*.2,
+                limVals[2] + (limVals[2]-limVals[1])*.2)
+    outPlot <- ggplot(comboDat, aes_string(x = 'IQ', y = varNames[target], color = 'age', shape = 'group')) +
+      geom_jitter(alpha = .75, size = 7)+
+      # scale_color_manual(values=c( "#E1C271", "#3BACDD","#4E554E"),
+      #                    labels=c(  'AD', 'ASD', 'CON')) +
+      theme_classic() +
+      theme(axis.line = element_line(color = 'black', size = 3),
+            axis.ticks = element_line(colour = "black", size = 2),
+            axis.ticks.length=unit(-.25, "cm"),
+            text = element_text(size = 20)) +
+      ylim(limVals) +
+      ylab(varNames[target]) +
+      ggtitle(paste(varNames[target], '; age group: ', as.character(agei), sep = ''))+
+      guides(color = guide_legend(override.aes = list(size=10)),
+             shape = guide_legend(override.aes = list(size=10)))  
+      # geom_vline(xintercept = ageGroups[2], linetype = 'dashed', linewidth = 2, alpha = .75)+ 
+      # geom_vline(xintercept = ageGroups[3], linetype = 'dashed', linewidth = 2, alpha = .75)
+    # rect(1, 5, 3, 7, col="white")
+    png(paste( 'bestPredicted_',predNames[vari],'_', agei, '.png', sep = ''),         # File name
+        width=1024, height=768)
+    print(outPlot)
+    dev.off()
+  }
+}
+
+## PLOTS FOR Diag! 
+vari = 4
+for(agei in 1:3){
+  temp = resultsDif[resultsDif$ageGroup == agei,]
+  tempRes = resultsTRAIN[resultsDif$ageGroup == agei,]
+  candidates = which(temp[predNames[vari]] < .2 & tempRes[predNames[vari]] > thresh)
+  target = candidates[which(tempRes[candidates,predNames[vari]]==max(tempRes[candidates,predNames[vari]]))]
+  if(length(target)>0){
+    limVals = quantile(comboDat[,varNames[target]], c(.1,.9))
+    limVals = c(limVals[1] - (limVals[2]-limVals[1])*.25,
+                limVals[2] + (limVals[2]-limVals[1])*.25)
+    outPlot <- ggplot(comboDat, aes_string(x = 'age', y = varNames[target], color = 'group', shape = 'sex', size = 'IQ')) +
+      geom_jitter(alpha = .75)+
+      scale_color_manual(values=c( "#E1C271", "#3BACDD","#4E554E"),
+                         labels=c(  'AD', 'ASD', 'CON')) +
+      theme_classic() +
+      theme(axis.line = element_line(color = 'black', size = 3),
+            axis.ticks = element_line(colour = "black", size = 2),
+            axis.ticks.length=unit(-.25, "cm"),
+            text = element_text(size = 20)) +
+      ylim(limVals) +
+      scale_size(range = c(3,10))+
+      ylab(varNames[target]) +
+      ggtitle(paste(varNames[target], '; age group: ', as.character(agei), sep = ''))+
+      guides(color = guide_legend(override.aes = list(size=10)),
+             shape = guide_legend(override.aes = list(size=10))) + 
+      geom_vline(xintercept = ageGroups[2], linetype = 'dashed', linewidth = 2, alpha = .75)+ 
+      geom_vline(xintercept = ageGroups[3], linetype = 'dashed', linewidth = 2, alpha = .75)
+    # rect(1, 5, 3, 7, col="white")
+    png(paste( 'bestPredicted_',predNames[vari],'_', agei, '.png', sep = ''),         # File name
+        width=1024, height=768)
+    print(outPlot)
+    dev.off()
+  }
+}
+
 
 
 
