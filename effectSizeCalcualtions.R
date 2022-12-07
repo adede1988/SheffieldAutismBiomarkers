@@ -1,30 +1,101 @@
 
-library(lsr)
 
+
+
+
+
+library(lsr)
 library(tidyverse)
-# library(ggpubr)
-# library(rstatix)
-# library(broom)
 library(car)
 library(circular)
+library(kableExtra)
 
 
-test <- read.csv("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\autismBiomarkersAllData2.csv")
-test$nbChanOrig[test$nbChanOrig==999] = 124
+# test <- read.csv("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\autismBiomarkersAllData2.csv")
+test <- read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\autismBiomarkersAllData2.csv")
 
-dat <- filter(test, group %in% c('CON', 'AD', 'ASD'), eyes == 'open', nbChanFinal/nbChanOrig >= .5, nbChanOrig>20)
+test$nbChanOrig[test$nbChanOrig==999] = 124 #due to a data import error, less than 10 participants had their nbChanOrig values missing
 
-setwd("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures")
+dat <- filter(test, group %in% c('CON', 'AD', 'ASD'), eyes == 'open')
+
+#AD subjects above and below 250 months of age
+sum(dat$group=='AD' & dat$age > 250) 
+sum(dat$group=='AD' & dat$age <= 250)
+
+
+dat <- filter(dat, age<=250)
+
+dat <- filter(dat, nbChanOrig>20)
+dat <- filter(dat, nbChanFinal/nbChanOrig >= .5)
+
+#9 subjects had missing IQ data! these subjects will have dataset/group appropriate means substituted in below
+sum(is.na(dat$IQ))
+
+#data description table: 
+dataSumTable = data.frame('group' = rep(c('AD', 'ASD', 'CON')), 
+                        'data set' = as.vector(apply(as.matrix(unique(dat$dataSet)), 1, function(x) rep(x, 3))),
+                        'IQ' = rep('', 15),
+                        'IQ metric' = c(rep('DAS GCA', 3), rep('MSEL', 3), rep('WTAR', 3), rep('DAS GCA', 3), rep('WTAR', 3)),
+                        'age' = rep('', 15),
+                        'n female' = rep('', 15),
+                        'n total' = rep('', 15),
+                        'orig channels' = rep('', 15),
+                        'final channels' = rep('', 15),
+                        'orig epochs' = rep('', 15),
+                        'final epochs' = rep('', 15))
+
+
+
+for(ii in 1:15) { 
+  cur = filter(dat, group == dataSumTable$group[ii], dataSet == dataSumTable$data.set[ii])
+  if(length(cur$age) > 0){
+  dataSumTable$IQ[ii] = paste(round(mean(cur$IQ, na.rm = T)), ' (', round(sd(cur$IQ, na.rm = T)), ')', sep='')
+  dataSumTable$age[ii] = paste(round(mean(cur$age)), ' (', round(sd(cur$age)), ')', sep='')
+  dataSumTable$n.female[ii] = sum(cur$sex == 'F')
+  dataSumTable$n.total[ii] = length(cur$sex)
+  dataSumTable$orig.channels[ii] = paste(round(mean(cur$nbChanOrig)), ' (', round(sd(cur$nbChanOrig)), ')', sep='')
+  dataSumTable$final.channels[ii] = paste(round(mean(cur$nbChanFinal)), ' (', round(sd(cur$nbChanFinal)), ')', sep='')
+  dataSumTable$orig.epochs[ii] = paste(round(mean(cur$nbTrialOrig)), ' (', round(sd(cur$nbTrialOrig)), ')', sep='')
+  dataSumTable$final.epochs[ii] = paste(round(mean(cur$nbTrialFinal)), ' (', round(sd(cur$nbTrialFinal)), ')', sep='')
+  
+  #replace na IQ values
+  dat$IQ[dat$group == dataSumTable$group[ii] & dat$dataSet == dataSumTable$data.set[ii] & is.na(dat$IQ)] = mean(cur$IQ, na.rm = T)
+  }
+  }
+
+
+
+dataSumTable %>% 
+  kbl(align = 'c') %>% 
+  kable_classic(full_width = F, 
+                font_size = 20) %>%
+  row_spec(1, align = 'c')%>%
+  footnote(general = "DAS GCA = Differential Ability Scales General Conceptual Ability
+                      MSEL = Mullen Scales of Early Learning
+                      WTAR = Weschler Test of Adult Reading
+                      biomarkCon = The Autism Biomarkers Consortium for Clinical Trials
+                      biomarkDev = Biomarkers of Developmental Trajectories and Treatment in ASD
+                      bpSZ = Bipolar & Schizophrenia Consortium for Parsing Intermediate Phenotypes 
+                      femaleASD = Multimodal Developmental Neurogenetics of Females with ASD
+                      socBrain = The Social Brain in Schizophrenia and Autism Spectrum Disorders
+                      Numeric values indicate mean and (standard deviation).",
+           general_title = "Table 1: ",
+           footnote_as_chunk = T, title_format = c("italic", "underline")
+  )  
+
+
+
+
+
+setwd("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures")
+
+
+
+
+
+
 
 #### some descriptives about the overall data set ####
-png("ageAll.png",         # File name
-    width=1024, height=768)# Color
-ggplot(dat, aes(x = age, color = group, fill = group)) + geom_histogram()
-rect(1, 5, 3, 7, col="white")
-dev.off()
-
-dat <- filter(test, group %in% c('CON', 'AD', 'ASD'), eyes == 'open', age<250, nbChanFinal/nbChanOrig >= .5, nbChanOrig>20)
-
 png("ageYoung.png",         # File name
     width=1024, height=768)# Color
 ggplot(dat, aes(x = age, color = group, fill = group)) + geom_histogram()
@@ -80,7 +151,7 @@ ageGroups[4]=999
 
 #### end randomization block ####
 
-dat = read.csv("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
+dat = read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
 dat <- dat %>% select(-X)
 varNames = names(dat)[20:1179]
 
@@ -98,7 +169,7 @@ results = data.frame('dependentVariable' = rep('A', 4*length(varNames)),
                      'out' = rep(0, 4*length(varNames)),
                      'ageGroup' = rep(0, 4*length(varNames)))
 
-setwd("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures")
+
 for(ii in 2:length(ageGroups)){
   #down select for age
   curDat = dat[dat$age>ageGroups[ii-1] & dat$age<ageGroups[ii], ]
@@ -258,8 +329,8 @@ for(ii in 2:length(ageGroups)){
     results$n[tt+ai] = n
     results$out[tt+ai] = n-length(dv)
     results$ageGroup[tt+ai] = ii-1
-    results$dvMean = dv_mean
-    results$dvSD = dv_sd
+    results$dvMean[tt+ai] = dv_mean
+    results$dvSD[tt+ai] = dv_sd
   }
   
  
@@ -268,7 +339,7 @@ for(ii in 2:length(ageGroups)){
 
 resultsTRAIN = results
 #### now get the same set of results but from the test set! 
-dat = read.csv("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\testSet.csv")
+dat = read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\testSet.csv")
 dat <- dat %>% select(-X)
 varNames = names(dat)[20:1179]
 results = data.frame('dependentVariable' = rep('A', 4*length(varNames)),
@@ -286,7 +357,6 @@ results = data.frame('dependentVariable' = rep('A', 4*length(varNames)),
                       'ageGroup' = rep(0, 4*length(varNames)))
 
 
-setwd("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures")
 for(ii in 2:length(ageGroups)){
   #down select for age
   curDat = dat[dat$age>ageGroups[ii-1] & dat$age<ageGroups[ii], ]
@@ -428,8 +498,8 @@ for(ii in 2:length(ageGroups)){
       results$n[tt+ai] = n
       results$out[tt+ai] = n-length(dv)
       results$ageGroup[tt+ai] = ii-1
-      results$dvMean = dv_mean
-      results$dvSD = dv_sd
+      results$dvMean[tt+ai] = dv_mean
+      results$dvSD[tt+ai] = dv_sd
     }
     
     
@@ -483,7 +553,6 @@ resultsTRAIN$type[apply(as.matrix(resultsTRAIN$dependentVariable),
                       1, function(x) grepl('phase', x, ignore.case = T))] = 'phase'
 
 #### general graphics params ####
-setwd("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures\\summaryFigs")
 
 ageLabs = c(paste(as.character(min(filter(dat, age>ageGroups[1] & age<ageGroups[2])$age)), '-',
                   as.character(max(filter(dat, age>ageGroups[1] & age<ageGroups[2])$age)), 
@@ -518,8 +587,8 @@ for(vari in 1:4){
       coord_cartesian(xlim=c(0,.6500001),ylim = c(0,100)) +
       theme_classic(base_size = 30)+
       theme(axis.ticks.length=unit(-0.5, "cm"),
-            axis.line = element_line(colour = 'black', linewidth = 3),
-            axis.ticks = element_line(colour = 'black', linewidth = 3)) + 
+            axis.line = element_line(colour = 'black', size = 3),
+            axis.ticks = element_line(colour = 'black', size = 3)) + 
       scale_x_continuous(expand = c(0, 0), limits = c(0, .65), breaks = seq(0,.6,.1)) +
       scale_y_continuous(expand = c(0, 0), breaks = seq(0,100,20)) + 
       geom_vline(xintercept = .05, linetype = 'dashed', size = 5)
@@ -586,12 +655,20 @@ for(vari in 1:4){
 
 
 #### choosing the best plot for each 
-dat2 = read.csv("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
+dat2 = read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
 dat2 <- dat2 %>% select(-X)
 comboDat = rbind(dat2, dat)
+comboDat$ageGroup = 1
+comboDat$ageGroup[comboDat$age>ageGroups[2]] = 2
+comboDat$ageGroup[comboDat$age>ageGroups[3]] = 3
+#quick check of how many participants had missing data for alpha peak calculation
+test = comboDat[,(grepl('logAlpha', names(comboDat)) | grepl('relAlpha', names(comboDat)))]
+sum(apply(as.matrix(test), 1, function(x) sum(is.na(x)))> 0) #how many participants had at least one miss? 
+sum(apply(as.matrix(test), 1, function(x) sum(is.na(x)))> 5) #how many participants had more than 5 misses? 
+1-sum(apply(as.matrix(test), 1, function(x) sum(is.na(x))))/(776*36) #what proportion were well fit? 
+
 predNames2 = predNames
 predNames2[4] = 'group'
-setwd("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures\\summaryFigs")
 
 ## PLOTS FOR AGE! 
 vari = 1
@@ -709,21 +786,20 @@ for(agei in 1:3){
     limVals = quantile(comboDat[,varNames[target]], c(.1,.9))
     limVals = c(limVals[1] - (limVals[2]-limVals[1])*.25,
                 limVals[2] + (limVals[2]-limVals[1])*.25)
-    outPlot <- ggplot(comboDat, aes_string(x = 'age', y = varNames[target], color = 'group', shape = 'sex', size = 'IQ')) +
-      geom_jitter(alpha = .75)+
-      scale_color_manual(values=c( "#E1C271", "#3BACDD","#4E554E"),
-                         labels=c(  'AD', 'ASD', 'CON')) +
+    outPlot <- comboDat %>% filter( group %in% c('CON', 'AD')) %>% arrange(ageGroup, group) %>% #age> ageGroups[agei], age<= ageGroups[agei+1],
+      ggplot(aes_string(x = 'ageGroup', y = varNames[target], fill = 'group')) +
+      geom_split_violin()+
+      scale_color_manual(values=c( "#E1C271", "#4E554E"),
+                         labels=c(  'AD',  'CON')) +
       theme_classic() +
       theme(axis.line = element_line(color = 'black', size = 3),
             axis.ticks = element_line(colour = "black", size = 2),
             axis.ticks.length=unit(-.25, "cm"),
             text = element_text(size = 20)) +
       ylim(limVals) +
-      scale_size(range = c(3,10))+
       ylab(varNames[target]) +
       ggtitle(paste(varNames[target], '; age group: ', as.character(agei), sep = ''))+
-      guides(color = guide_legend(override.aes = list(size=10)),
-             shape = guide_legend(override.aes = list(size=10))) + 
+      guides(color = guide_legend(override.aes = list(size=10))) + 
       geom_vline(xintercept = ageGroups[2], linetype = 'dashed', linewidth = 2, alpha = .75)+ 
       geom_vline(xintercept = ageGroups[3], linetype = 'dashed', linewidth = 2, alpha = .75)
     # rect(1, 5, 3, 7, col="white")
