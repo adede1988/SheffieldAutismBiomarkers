@@ -11,8 +11,8 @@ library(circular)
 library(kableExtra)
 
 
-# test <- read.csv("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\autismBiomarkersAllData2.csv")
-test <- read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\autismBiomarkersAllData2.csv")
+test <- read.csv("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\autismBiomarkersAllData2.csv")
+# test <- read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\autismBiomarkersAllData2.csv")
 
 test$nbChanOrig[test$nbChanOrig==999] = 124 #due to a data import error, less than 10 participants had their nbChanOrig values missing
 
@@ -86,8 +86,8 @@ dataSumTable %>%
 
 
 
-
-setwd("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures")
+setwd("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures")
+# setwd("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures")
 
 
 
@@ -150,8 +150,8 @@ ageGroups[4]=999
 # write.csv(heldOut, "C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\testSet.csv")
 
 #### end randomization block ####
-
-dat = read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
+dat = read.csv("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
+# dat = read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
 dat <- dat %>% select(-X)
 varNames = names(dat)[20:1179]
 
@@ -167,6 +167,7 @@ results = data.frame('dependentVariable' = rep('A', 4*length(varNames)),
                      'diag_b2' = rep(0, 4*length(varNames)),
                      'n' = rep(0, 4*length(varNames)),
                      'out' = rep(0, 4*length(varNames)),
+                     'outlierFirst' = rep(0, 4*length(varNames)),
                      'ageGroup' = rep(0, 4*length(varNames)))
 
 
@@ -212,7 +213,6 @@ for(ii in 2:length(ageGroups)){
       age = temp$age[abs(dv_z)<5]
       sex = temp$sex[abs(dv_z)<5]
       IQ = temp$IQ[abs(dv_z)<5]
-      IQ[is.na(IQ)] = 100
       gID = groupID[keep]
       ID = gID[abs(dv_z)<5]
       #standardizing the dependent variable prior to model calculation
@@ -233,7 +233,6 @@ for(ii in 2:length(ageGroups)){
       age = temp$age
       sex = temp$sex
       IQ = temp$IQ
-      IQ[is.na(IQ)] = 100
       ID = groupID[keep]
     }
     
@@ -328,6 +327,7 @@ for(ii in 2:length(ageGroups)){
     #shared outputs for phase and other
     results$n[tt+ai] = n
     results$out[tt+ai] = n-length(dv)
+    results$outlierFirst[tt+ai] = n - length(nonOut)
     results$ageGroup[tt+ai] = ii-1
     results$dvMean[tt+ai] = dv_mean
     results$dvSD[tt+ai] = dv_sd
@@ -339,7 +339,8 @@ for(ii in 2:length(ageGroups)){
 
 resultsTRAIN = results
 #### now get the same set of results but from the test set! 
-dat = read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\testSet.csv")
+dat = read.csv("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\testSet.csv")
+# dat = read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\testSet.csv")
 dat <- dat %>% select(-X)
 varNames = names(dat)[20:1179]
 results = data.frame('dependentVariable' = rep('A', 4*length(varNames)),
@@ -354,6 +355,7 @@ results = data.frame('dependentVariable' = rep('A', 4*length(varNames)),
                       'diag_b2' = rep(0, 4*length(varNames)),
                       'n' = rep(0, 4*length(varNames)),
                       'out' = rep(0, 4*length(varNames)),
+                      'outlierFirst' = rep(0, 4*length(varNames)),
                       'ageGroup' = rep(0, 4*length(varNames)))
 
 
@@ -399,7 +401,6 @@ for(ii in 2:length(ageGroups)){
         age = temp$age[abs(dv_z)<5]
         sex = temp$sex[abs(dv_z)<5]
         IQ = temp$IQ[abs(dv_z)<5]
-        IQ[is.na(IQ)] = 100
         gID = groupID[keep]
         ID = gID[abs(dv_z)<5]
         #standardizing the dependent variable prior to model calculation
@@ -420,7 +421,6 @@ for(ii in 2:length(ageGroups)){
         age = temp$age
         sex = temp$sex
         IQ = temp$IQ
-        IQ[is.na(IQ)] = 100
         ID = groupID[keep]
       }
       
@@ -497,6 +497,7 @@ for(ii in 2:length(ageGroups)){
       #shared outputs for phase and other
       results$n[tt+ai] = n
       results$out[tt+ai] = n-length(dv)
+      results$outlierFirst[tt+ai] = n - length(nonOut)
       results$ageGroup[tt+ai] = ii-1
       results$dvMean[tt+ai] = dv_mean
       results$dvSD[tt+ai] = dv_sd
@@ -509,10 +510,10 @@ for(ii in 2:length(ageGroups)){
 resultsTEST = results
 #### result difference scores #### 
 resultsDif = data.frame('dependentVariable' = resultsTEST$dependentVariable, 
-                       'age' = abs(resultsTEST$age - resultsTRAIN$age) / (resultsTEST$age + resultsTRAIN$age),
-                       'sex' = abs(resultsTEST$sex - resultsTRAIN$sex) / (resultsTEST$sex + resultsTRAIN$sex),
-                       'IQ' = abs(resultsTEST$IQ - resultsTRAIN$IQ) / (resultsTEST$IQ + resultsTRAIN$IQ),
-                       'Diag' = abs(resultsTEST$Diag - resultsTRAIN$Diag) / (resultsTEST$Diag + resultsTRAIN$Diag),
+                       'age' = 1 - (abs(resultsTEST$age - resultsTRAIN$age) / (resultsTEST$age + resultsTRAIN$age)),
+                       'sex' = 1 - (abs(resultsTEST$sex - resultsTRAIN$sex) / (resultsTEST$sex + resultsTRAIN$sex)),
+                       'IQ' = 1 - (abs(resultsTEST$IQ - resultsTRAIN$IQ) / (resultsTEST$IQ + resultsTRAIN$IQ)),
+                       'Diag' = 1 - (abs(resultsTEST$Diag - resultsTRAIN$Diag) / (resultsTEST$Diag + resultsTRAIN$Diag)),
                        'ageGroup' = resultsTEST$ageGroup )
 resultsDif = filter(resultsDif, resultsTEST$dependentVariable != 'A')
 resultsTEST = filter(resultsTEST, dependentVariable != 'A')
@@ -552,6 +553,10 @@ resultsTRAIN$type[apply(as.matrix(resultsTRAIN$dependentVariable),
 resultsTRAIN$type[apply(as.matrix(resultsTRAIN$dependentVariable),
                       1, function(x) grepl('phase', x, ignore.case = T))] = 'phase'
 
+
+
+
+
 #### general graphics params ####
 
 ageLabs = c(paste(as.character(min(filter(dat, age>ageGroups[1] & age<ageGroups[2])$age)), '-',
@@ -569,6 +574,15 @@ names(myColors) <- levels(factor(resultsTRAIN$type))
 colScale <- scale_color_manual(name = "type",values = myColors)
 fillScale <- scale_fill_manual(name = "type",values = myColors)
 theme_set(theme_gray(base_size = 30))
+
+#### evaluate outliers during analysis #### 
+
+sum(resultsTRAIN$out==0) / length(resultsTRAIN$out)
+ggplot(resultsTRAIN, aes(x=out, color = type, fill = type)) +
+  colScale +
+  fillScale + 
+  geom_histogram(breaks = seq(0,22,1)) +
+  coord_cartesian(xlim=c(0,22),ylim = c(0,100))
 
 
 #### plotting the effect size values ####
@@ -606,13 +620,23 @@ n = length(resultsDif$age)
 allEffects = data.frame('agreement' = c(resultsDif$age, resultsDif$sex, resultsDif$IQ, resultsDif$Diag),
                         'effectSize' = c(resultsTRAIN$age, resultsTRAIN$sex, resultsTRAIN$IQ, resultsTRAIN$Diag),
                         'predictor' = c(rep('age', n), rep('sex', n), rep('IQ', n), rep('diagnosis', n)))
+
+  #how well does stability predict effect size when age is the predictor? 
+  cor.test(filter(allEffects, predictor == 'age')[,1],filter(allEffects, predictor == 'age')[,2])
+  #how well does stability predict effect size when age is the predictor? 
+  cor.test(filter(allEffects, predictor == 'sex')[,1],filter(allEffects, predictor == 'sex')[,2])
+  #how well does stability predict effect size when age is the predictor? 
+  cor.test(filter(allEffects, predictor == 'IQ')[,1],filter(allEffects, predictor == 'IQ')[,2])
+  #how well does stability predict effect size when age is the predictor? 
+  cor.test(filter(allEffects, predictor == 'diagnosis')[,1],filter(allEffects, predictor == 'diagnosis')[,2])
+
 outPlot <-ggplot(allEffects, aes(x=agreement, y=effectSize, color = predictor)) + 
                  geom_jitter(size = 5, alpha = .5)+
                  theme_classic(base_size = 30)+
                  theme(axis.ticks.length=unit(-0.5, "cm"),
                  axis.line = element_line(colour = 'black', size = 3),
                  axis.ticks = element_line(colour = 'black', size = 3),
-                 legend.position = c(0.67, 0.8)) + 
+                 legend.position = c(0.37, 0.8)) + 
                  guides(color = guide_legend(override.aes = list(size=10),
                                              nrow=4)) + 
                  ylab('effect size (\U1D702\U00B2\U209A)') + 
@@ -643,7 +667,8 @@ for(vari in 1:4){
             axis.line = element_line(colour = 'black', size = 3),
             axis.ticks = element_line(colour = 'black', size = 3)) + 
       scale_x_continuous(expand = c(0, 0), limits = c(0, 1), breaks = seq(0,1,.1)) +
-      scale_y_continuous(expand = c(0, 0))
+      scale_y_continuous(expand = c(0, 0))+ 
+      geom_vline(xintercept = .8, linetype = 'dashed', size = 5)
     
     png(paste('stability_', predNames[vari], '_', '.png',sep=''),         # File name
         width=1024, height=768)
@@ -654,8 +679,40 @@ for(vari in 1:4){
 
 
 
+#### table 2: what's the number of 'good' predictors as a function of age and predictor? #### 
+
+goodPreds = data.frame('age'= c(0,0,0), 
+                       'sex'= c(0,0,0), 
+                       'IQ'= c(0,0,0), 
+                       'diagnosis'= c(0,0,0),
+                       row.names = ageLabs)
+for(vari in 1:4) { 
+  for(agei in 1:3){
+    temp = resultsDif[resultsDif$ageGroup == agei,]
+    tempRes = resultsTRAIN[resultsDif$ageGroup == agei,]
+    candidates = which(temp[predNames[vari]] > .8 & tempRes[predNames[vari]] > thresh)
+    goodPreds[agei,vari] = length(candidates)
+  }
+  
+}
+
+goodPreds %>% 
+  kbl(align = 'c') %>% 
+  kable_classic(full_width = F, 
+                font_size = 20) %>%
+  column_spec(1, border_right = T)%>%
+  footnote(general = "Performance of different predictors in each age group. 
+           Number of independent variables predicted with \U1D702\U00B2\U209A > .05 and stability > .80",
+           general_title = "Table 2: ",
+           footnote_as_chunk = T, title_format = c("italic", "underline")
+  )  
+
+chisq.test(goodPreds)
+
+
 #### choosing the best plot for each 
-dat2 = read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
+# dat2 = read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
+dat2 = read.csv("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
 dat2 <- dat2 %>% select(-X)
 comboDat = rbind(dat2, dat)
 comboDat$ageGroup = 1
@@ -780,13 +837,19 @@ vari = 4
 for(agei in 1:3){
   temp = resultsDif[resultsDif$ageGroup == agei,]
   tempRes = resultsTRAIN[resultsDif$ageGroup == agei,]
-  candidates = which(temp[predNames[vari]] < .2 & tempRes[predNames[vari]] > thresh)
+  candidates = which(temp[predNames[vari]] > .8 & tempRes[predNames[vari]] > thresh)
   target = candidates[which(tempRes[candidates,predNames[vari]]==max(tempRes[candidates,predNames[vari]]))]
   if(length(target)>0){
     limVals = quantile(comboDat[,varNames[target]], c(.1,.9))
     limVals = c(limVals[1] - (limVals[2]-limVals[1])*.25,
                 limVals[2] + (limVals[2]-limVals[1])*.25)
-    outPlot <- comboDat %>% filter( group %in% c('CON', 'AD')) %>% arrange(ageGroup, group) %>% #age> ageGroups[agei], age<= ageGroups[agei+1],
+    plotDat <- comboDat %>% filter( group %in% c('CON', 'AD')) %>% arrange(ageGroup, group)
+    n = length(plotDat$age)
+    plotDat[(n+1):(n+3), varNames[target]] = -1000000
+    plotDat[(n+1):(n+3), 'ageGroup'] = c(1,2,3)
+    plotDat[(n+1):(n+3), 'group'] = c('CON', 'CON', 'CON')
+    plotDat$ageGroup = as.factor(plotDat$ageGroup)
+    outPlot <-  plotDat %>% #age> ageGroups[agei], age<= ageGroups[agei+1],
       ggplot(aes_string(x = 'ageGroup', y = varNames[target], fill = 'group')) +
       geom_split_violin()+
       scale_color_manual(values=c( "#E1C271", "#4E554E"),
