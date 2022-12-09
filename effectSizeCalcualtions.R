@@ -10,9 +10,11 @@ library(car)
 library(circular)
 library(kableExtra)
 
+## set path to github repo on local machine here: 
+# path = "C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\"
+path = "C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\"
 
-test <- read.csv("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\autismBiomarkersAllData2.csv")
-# test <- read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\autismBiomarkersAllData2.csv")
+test <- read.csv(paste(path, "autismBiomarkersAllData2.csv", sep = ''))
 
 test$nbChanOrig[test$nbChanOrig==999] = 124 #due to a data import error, less than 10 participants had their nbChanOrig values missing
 
@@ -86,14 +88,7 @@ dataSumTable %>%
 
 
 
-setwd("C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures")
-# setwd("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\figures")
-
-
-
-
-
-
+setwd(paste(path, 'figures', sep = '')) 
 
 #### some descriptives about the overall data set ####
 png("ageYoung.png",         # File name
