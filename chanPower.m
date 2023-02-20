@@ -23,7 +23,7 @@ function [allPow] = chanPower(chanDat, frex, numfrex, stds)
 %written by Adam Dede (adam.osman.dede@gmail.com)
 %fall 2022
 
-    allPow = zeros(1, numfrex, size(chanDat.data,3)); 
+    allPow = zeros(size(chanDat.data,1), numfrex, size(chanDat.data,3)); 
      
     for snip = 1:size(chanDat.data,3)
         
