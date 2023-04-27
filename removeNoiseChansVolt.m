@@ -116,11 +116,11 @@ if ~isfield(EEG, 'noiseRemoved')
    
 
 
-    [folder,name,~] = fileparts(path);
+%     [folder,name,~] = fileparts(path);
     EEG.noiseRemoved = true; 
     EEG.nbChanOrig = nbChanOrig; 
     EEG.nbTrialOrig = nbTrialOrig;
-    save(join([folder '/' name '_processed.mat'],''), "EEG")
+%     save(join([folder '/' name '_processed.mat'],''), "EEG")
 else
     nbChanFinal = size(EEG.data,1); 
     nbTrialFinal = size(EEG.data,3);
