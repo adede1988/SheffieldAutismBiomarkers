@@ -10,11 +10,12 @@ library(car)
 library(circular)
 library(kableExtra)
 library(pracma)
+source('R:/MSS/Johnson_Lab/dtf8829/GitHub/SheffieldAutismBiomarkers/helperFuncs.R')
 
 ## set path to github repo on local machine here: 
-path = "C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\"
+path = "R:\\MSS\\Johnson_Lab\\dtf8829\\GitHub\\SheffieldAutismBiomarkers\\"
 # path = "C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\"
-
+figPath = "G:\\My Drive\\Milne\\pubFigPanels\\"
 test <- read.csv(paste(path, "autismBiomarkersAllData2.csv", sep = ''))
 
 test$nbChanOrig[test$nbChanOrig==999] = 124 #due to a data import error, less than 10 participants had their nbChanOrig values missing
@@ -35,115 +36,20 @@ dat <- filter(dat, nbChanFinal/nbChanOrig >= .5)
 sum(is.na(dat$IQ))
 
 #data description table: 
-dataSumTable = data.frame('group' = rep(c('AD', 'ASD', 'CON')), 
-                        'data set' = as.vector(apply(as.matrix(unique(dat$dataSet)), 1, function(x) rep(x, 3))),
-                        'IQ' = rep('', 15),
-                        'IQ metric' = c(rep('DAS GCA', 3), rep('MSEL', 3), rep('WTAR', 3), rep('DAS GCA', 3), rep('WTAR', 3)),
-                        'age' = rep('', 15),
-                        'n female' = rep('', 15),
-                        'n total' = rep('', 15),
-                        'orig channels' = rep('', 15),
-                        'final channels' = rep('', 15),
-                        'orig epochs' = rep('', 15),
-                        'final epochs' = rep('', 15))
+makeDemoTable(dat)
 
 
+#age group detection originally done with this code: 
+# ageGroups = quantile(filter(dat, group %in% c('AD', 'ASD'))$age , c(0,.33333,.666666,1.0))
+# ageGroups[1]= 0
+# ageGroups[4]=999
+#hard code the age groups 
+ageGroups = c(0,97,127,999)
 
-for(ii in 1:15) { 
-  cur = filter(dat, group == dataSumTable$group[ii], dataSet == dataSumTable$data.set[ii])
-  if(length(cur$age) > 0){
-  dataSumTable$IQ[ii] = paste(round(mean(cur$IQ, na.rm = T)), ' (', round(sd(cur$IQ, na.rm = T)), ')', sep='')
-  dataSumTable$age[ii] = paste(round(mean(cur$age)), ' (', round(sd(cur$age)), ')', sep='')
-  dataSumTable$n.female[ii] = sum(cur$sex == 'F')
-  dataSumTable$n.total[ii] = length(cur$sex)
-  dataSumTable$orig.channels[ii] = paste(round(mean(cur$nbChanOrig)), ' (', round(sd(cur$nbChanOrig)), ')', sep='')
-  dataSumTable$final.channels[ii] = paste(round(mean(cur$nbChanFinal)), ' (', round(sd(cur$nbChanFinal)), ')', sep='')
-  dataSumTable$orig.epochs[ii] = paste(round(mean(cur$nbTrialOrig)), ' (', round(sd(cur$nbTrialOrig)), ')', sep='')
-  dataSumTable$final.epochs[ii] = paste(round(mean(cur$nbTrialFinal)), ' (', round(sd(cur$nbTrialFinal)), ')', sep='')
-  
-  #replace na IQ values
-  dat$IQ[dat$group == dataSumTable$group[ii] & dat$dataSet == dataSumTable$data.set[ii] & is.na(dat$IQ)] = mean(cur$IQ, na.rm = T)
-  }
-  }
-
-
-
-dataSumTable %>% 
-  kbl(align = 'c') %>% 
-  kable_classic(full_width = F, 
-                font_size = 20) %>%
-  row_spec(1, align = 'c')%>%
-  footnote(general = "DAS GCA = Differential Ability Scales General Conceptual Ability
-                      MSEL = Mullen Scales of Early Learning
-                      WTAR = Weschler Test of Adult Reading
-                      biomarkCon = The Autism Biomarkers Consortium for Clinical Trials
-                      biomarkDev = Biomarkers of Developmental Trajectories and Treatment in ASD
-                      bpSZ = Bipolar & Schizophrenia Consortium for Parsing Intermediate Phenotypes 
-                      femaleASD = Multimodal Developmental Neurogenetics of Females with ASD
-                      socBrain = The Social Brain in Schizophrenia and Autism Spectrum Disorders
-                      Numeric values indicate mean and (standard deviation).",
-           general_title = "Table 1: ",
-           footnote_as_chunk = T, title_format = c("italic", "underline")
-  )  
-
-
-
-
-setwd(paste(path, 'figures', sep = '')) 
-
-#### some descriptives about the overall data set ####
-png("ageYoung.png",         # File name
-    width=1024, height=768)# Color
-ggplot(dat, aes(x = age, color = group, fill = group)) + geom_histogram()
-rect(1, 5, 3, 7, col="white")
-dev.off()
-
-png("ageDatSet.png",         # File name
-    width=1024, height=768)
-ggplot(dat, aes(x = age, color = dataSet, fill = dataSet)) + geom_histogram()
-rect(1, 5, 3, 7, col="white")
-dev.off()
-
-png("sex.png",         # File name
-    width=1024, height=768)
-ggplot(dat, aes(x = sex, color = group, fill = group)) + geom_bar()
-rect(1, 5, 3, 7, col="white")
-dev.off()
-
-ageGroups = quantile(filter(dat, group %in% c('AD', 'ASD'))$age , c(0,.33333,.666666,1.0))
-ageGroups[1]= 0
-ageGroups[4]=999
 
 #### randomization code written on 29/11/2022 and run one time
-# 
-# dat <- dat %>% arrange(age)
-# allIdx = c()
-# for(ii in 2:length(ageGroups)){
-#   temp = which(dat$age>ageGroups[ii-1] & dat$age<=ageGroups[ii] )
-#   tempS = dat$sex[temp]
-#   tempG = dat$group[temp]
-# 
-#   keepers = c()
-#   #do removal separately for male and female
-#   temp_f = temp[tempS=='F']
-#   temp_m = temp[tempS=='M']
-#   #bring diagnosis info along
-#   temp_fG = tempG[tempS=='F']
-#   temp_mG = tempG[tempS=='M']
-#   #do removal for each diagnosis
-#   for(di in c('AD', 'ASD', 'CON')){
-#     curM = temp_m[temp_mG == di]
-#     curF = temp_f[temp_fG == di]
-#     keepers = c(keepers, sample(curM, round(length(curM)*.5)))
-#     keepers = c(keepers, sample(curF, round(length(curF)*.5)))
-#   }
-#   allIdx = c(allIdx, is.element(temp, keepers))
-# 
-# }
-# heldOut = dat[allIdx == F, ]
-# dat = dat[allIdx,]
-# write.csv(dat, "C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
-# write.csv(heldOut, "C:\\Users\\pc1aod\\Documents\\GitHub\\SheffieldAutismBiomarkers\\testSet.csv")
+#see helperFuncs.R for code specifications 
+
 
 #### end randomization block ####
 dat = read.csv(paste(path, "trainSet.csv", sep= ''))
@@ -167,17 +73,18 @@ results = data.frame('dependentVariable' = rep('A', 4*length(varNames)),
                      'ageGroup' = rep(0, 4*length(varNames)))
 
 
+
 for(ii in 2:length(ageGroups)){
   #down select for age
-  curDat = dat[dat$age>ageGroups[ii-1] & dat$age<ageGroups[ii], ]
+  curDat = dat[dat$age>ageGroups[ii-1] & dat$age<=ageGroups[ii], ]
   #down select for group ID
   # curDat = curDat[curDat$group == 'CON' | curDat$group == 'AD' |curDat$group == 'ASD',]
-  groupID = rep(1,length(curDat$group))
-  #running the analysis with AD and ASD as a single group
-  groupID[curDat$group=='AD'] = 3
-  groupID[curDat$group=='ASD'] = 2
+  groupID = rep('CON',length(curDat$group))
   
+  groupID[curDat$group=='AD'] = 'AD'
+  groupID[curDat$group=='ASD'] = 'ASD'
   
+  outliers = matrix(0,length(varNames), 3)
 
   for(tt in 1:length(varNames)){
     if(!grepl('PACmi', varNames[tt] )) { #skipping the non z-scored raw PAC values
@@ -185,87 +92,29 @@ for(ii in 2:length(ageGroups)){
     temp = curDat
     #### outlier removal ####
     #after beginning analysis, it was discovered that some variables contained
-    #extreme outliers such that one or two variables were far above the mean
+    #extreme outliers such that one or two observations were far above the mean
     #and all other variables were below the mean.
     #in these cases, simply eliminating outliers based on a standard z-score
     #would have eliminated all variables since the mean ended up in a position
     #far from any data points. To get around this, data were z scored using only
     #the middle 80% of the data. Then, based on this z-scoring, outliers were removed
-    if(!grepl('phase', varNames[tt])){
-      keep = !is.na(curDat[[varNames[tt]]])
-      temp = temp[keep,]
-      dv = temp[[varNames[tt]]]
-      n = length(dv)
-      lims = quantile(dv, c(.1, .90))
-      dv_mean = mean(dv[dv>lims[1] & dv<lims[2]])
-      dv_sd = sd(dv[dv>lims[1] & dv<lims[2]])
-      dv_z = (dv - dv_mean) / dv_sd
-      nonOut = which(abs(dv_z)<5)
-      dv_mean = mean(dv[nonOut])
-      dv_sd = sd(dv[nonOut])
-      dv_z = (dv - dv_mean) / dv_sd
-      
-      dv = dv[abs(dv_z)<5]
-      age = temp$age[abs(dv_z)<5]
-      sex = temp$sex[abs(dv_z)<5]
-      IQ = temp$IQ[abs(dv_z)<5]
-      gID = groupID[keep]
-      ID = gID[abs(dv_z)<5]
-      #standardizing the dependent variable prior to model calculation
-      #it was discovered after data analysis began that many values, particularly
-      #PAC values could not easily be fit because values were so small that floating
-      #point precision had a problem. To get around this, all variables were z-scored
-      #prior to model fitting. Mean and standard deviation are stored so that beta
-      #weights can be converted back later if necessary
-      dv_mean = mean(dv)
-      dv_sd = sd(dv)
-      dv = (dv - dv_mean) / dv_sd
-    }else{
-      dv_sd = 1
-      dv_mean = 0
-      keep = !is.na(curDat[[varNames[tt]]])
-      temp = temp[keep,]
-      dv = temp[[varNames[tt]]]
-      age = temp$age
-      sex = temp$sex
-      IQ = temp$IQ
-      ID = groupID[keep]
-    }
-    
-    
-    
-    modDat = data.frame('dv' = dv, 'age' = age, 'sex' = factor(sex), 'IQ' = IQ, 'diag' = factor(ID))
-    
-    
-    
+    tmpOut <- getModDat(dat, varNames, tt, temp, ageGroups, ii)
+    modDat <- tmpOut[[1]]
+    dat <- tmpOut[[2]]
    
 
+    #optional plot for this variable
+    # modelPlot(modDat, varNames[tt], ii)
 
-    # outPlot <- ggplot(modDat, aes(x = age, y = dv*dv_sd + dv_mean, color = diag, shape = sex, size = IQ)) +
-    #   geom_jitter()+
-    #   scale_color_manual(values=c("#4E554E", "#3BACDD", "#E1C271"),
-    #                        labels=c('CON', 'ASD', 'AD')) +
-    #   theme_classic() +
-    #   theme(axis.line = element_line(color = 'black', size = 3),
-    #         axis.ticks = element_line(colour = "black", size = 2),
-    #         axis.ticks.length=unit(-.25, "cm"),
-    #         text = element_text(size = 20)) +
-    #   ylab(varNames[tt]) +
-    #   ggtitle(paste(varNames[tt], '; age group: ', as.character(ii-1), sep = ''))+
-    #   guides(color = guide_legend(override.aes = list(size=10)),
-    #          shape = guide_legend(override.aes = list(size=10)))
-    # # rect(1, 5, 3, 7, col="white")
-    # png(paste(varNames[tt], '_', ii-1, '.png', sep = ''),         # File name
-    #     width=1024, height=768)
-    # print(outPlot)
-    # dev.off()
+
 
     if(!grepl('phase', varNames[tt])){
     
-   
+    modDat$diag <- factor(modDat$diag, levels = c("CON", "ASD", "AD"))
+    modDat$sex <- factor(modDat$sex, levels = c( "F","M"))  
     curLM = lm(dv ~ age + sex + diag  +IQ , data = modDat)
     aovTab = Anova(curLM, type = 3)
-    
+    curLM$coefficients
     ai = (ii-2)*length(varNames)
     
     results[tt+ai,1] = varNames[tt]
@@ -285,16 +134,23 @@ for(ii in 2:length(ageGroups)){
     results$sex_b[tt+ai] = curLM$coefficients[[ri]]
     ri = which(names(curLM$coefficients) == 'IQ')
     results$IQ_b[tt+ai] = curLM$coefficients[[ri]]
-    ri = which(names(curLM$coefficients) == 'diag2')
+    ri = which(names(curLM$coefficients) == 'diagASD')
     results$diag_b1[tt+ai] = curLM$coefficients[[ri]]
-    ri = which(names(curLM$coefficients) == 'diag3')
+    ri = which(names(curLM$coefficients) == 'diagAD')
     results$diag_b2[tt+ai] = curLM$coefficients[[ri]]
     
+    
+    results$n[tt+ai] = length(temp[,1])
+    results$out[tt+ai] = length(temp[,1])-length(modDat$dv)
+    results$ageGroup[tt+ai] = ii-1
+    results$dvMean[tt+ai] = modDat$dv_mean[1]
+    results$dvSD[tt+ai] = modDat$dv_sd[1]
+    
     }else { #phase needs to be treated differently because it's circular
-    circdv = circular(dv, unit = 'degrees')
+    circdv = circular(modDat$dv, unit = 'degrees')
     dv_mean =  mean(circdv)[[1]]
     dv_sd = sd(circdv)[[1]]
-    test = cbind(cos(dv*(pi/180)), sin(dv*(pi/180)))
+    test = cbind(cos(modDat$dv*(pi/180)), sin(modDat$dv*(pi/180)))
     curLM = lm(test ~ modDat$age + modDat$sex + modDat$diag  + modDat$IQ )
     aovTab = Anova(curLM, type = 3)
     outtests <- car:::print.Anova.mlm
@@ -318,15 +174,15 @@ for(ii in 2:length(ageGroups)){
     ri = which(grepl('age', row.names(tab)))
     results$age[tt+ai] = (tab$Df[1] * tab$`approx F`[ri]) / 
                           (tab$Df[ri] * tab$`approx F`[ri] + tab$`den Df`[ri])
-    }
     
-    #shared outputs for phase and other
-    results$n[tt+ai] = n
-    results$out[tt+ai] = n-length(dv)
-    results$outlierFirst[tt+ai] = n - length(nonOut)
+    results$n[tt+ai] = length(temp[,1])
+    results$out[tt+ai] = length(temp[,1])-length(modDat$dv)
     results$ageGroup[tt+ai] = ii-1
     results$dvMean[tt+ai] = dv_mean
     results$dvSD[tt+ai] = dv_sd
+    }
+    
+
   }
   
  
@@ -334,6 +190,7 @@ for(ii in 2:length(ageGroups)){
 }
 
 resultsTRAIN = results
+datTrain <- dat
 #### now get the same set of results but from the test set! 
 dat = read.csv(paste(path, "testSet.csv", sep=''))
 # dat = read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\testSet.csv")
@@ -357,15 +214,15 @@ results = data.frame('dependentVariable' = rep('A', 4*length(varNames)),
 
 for(ii in 2:length(ageGroups)){
   #down select for age
-  curDat = dat[dat$age>ageGroups[ii-1] & dat$age<ageGroups[ii], ]
+  curDat = dat[dat$age>ageGroups[ii-1] & dat$age<=ageGroups[ii], ]
   #down select for group ID
   # curDat = curDat[curDat$group == 'CON' | curDat$group == 'AD' |curDat$group == 'ASD',]
-  groupID = rep(1,length(curDat$group))
-  #running the analysis with AD and ASD as a single group
-  groupID[curDat$group=='AD'] = 3
-  groupID[curDat$group=='ASD'] = 2
+  groupID = rep('CON',length(curDat$group))
   
+  groupID[curDat$group=='AD'] = 'AD'
+  groupID[curDat$group=='ASD'] = 'ASD'
   
+  outliers = matrix(0,length(varNames), 3)
   
   for(tt in 1:length(varNames)){
     if(!grepl('PACmi', varNames[tt] )) { #skipping the non z-scored raw PAC values
@@ -373,69 +230,30 @@ for(ii in 2:length(ageGroups)){
       temp = curDat
       #### outlier removal ####
       #after beginning analysis, it was discovered that some variables contained
-      #extreme outliers such that one or two variables were far above the mean
+      #extreme outliers such that one or two observations were far above the mean
       #and all other variables were below the mean.
       #in these cases, simply eliminating outliers based on a standard z-score
       #would have eliminated all variables since the mean ended up in a position
       #far from any data points. To get around this, data were z scored using only
       #the middle 80% of the data. Then, based on this z-scoring, outliers were removed
-      if(!grepl('phase', varNames[tt])){
-        keep = !is.na(curDat[[varNames[tt]]])
-        temp = temp[keep,]
-        dv = temp[[varNames[tt]]]
-        n = length(dv)
-        lims = quantile(dv, c(.1, .90))
-        dv_mean = mean(dv[dv>lims[1] & dv<lims[2]])
-        dv_sd = sd(dv[dv>lims[1] & dv<lims[2]])
-        dv_z = (dv - dv_mean) / dv_sd
-        nonOut = which(abs(dv_z)<5)
-        dv_mean = mean(dv[nonOut])
-        dv_sd = sd(dv[nonOut])
-        dv_z = (dv - dv_mean) / dv_sd
-        
-        dv = dv[abs(dv_z)<5]
-        age = temp$age[abs(dv_z)<5]
-        sex = temp$sex[abs(dv_z)<5]
-        IQ = temp$IQ[abs(dv_z)<5]
-        gID = groupID[keep]
-        ID = gID[abs(dv_z)<5]
-        #standardizing the dependent variable prior to model calculation
-        #it was discovered after data analysis began that many values, particularly
-        #PAC values could not easily be fit because values were so small that floating
-        #point precision had a problem. To get around this, all variables were z-scored
-        #prior to model fitting. Mean and standard deviation are stored so that beta
-        #weights can be converted back later if necessary
-        dv_mean = mean(dv)
-        dv_sd = sd(dv)
-        dv = (dv - dv_mean) / dv_sd
-      }else{
-        dv_sd = 1
-        dv_mean = 0
-        keep = !is.na(curDat[[varNames[tt]]])
-        temp = temp[keep,]
-        dv = temp[[varNames[tt]]]
-        age = temp$age
-        sex = temp$sex
-        IQ = temp$IQ
-        ID = groupID[keep]
-      }
+      tmpOut <- getModDat(dat, varNames, tt, temp, ageGroups, ii)
+      modDat <- tmpOut[[1]]
+      dat <- tmpOut[[2]]
       
       
-      
-      modDat = data.frame('dv' = dv, 'age' = age, 'sex' = factor(sex), 'IQ' = IQ, 'diag' = factor(ID))
-      
-      
+      #optional plot for this variable
+      # modelPlot(modDat, varNames[tt], ii)
       
       
-      
-     
       
       if(!grepl('phase', varNames[tt])){
         
         
+        modDat$diag <- factor(modDat$diag, levels = c("CON", "ASD", "AD"))
+        modDat$sex <- factor(modDat$sex, levels = c( "F","M"))  
         curLM = lm(dv ~ age + sex + diag  +IQ , data = modDat)
         aovTab = Anova(curLM, type = 3)
-        
+        curLM$coefficients
         ai = (ii-2)*length(varNames)
         
         results[tt+ai,1] = varNames[tt]
@@ -455,16 +273,23 @@ for(ii in 2:length(ageGroups)){
         results$sex_b[tt+ai] = curLM$coefficients[[ri]]
         ri = which(names(curLM$coefficients) == 'IQ')
         results$IQ_b[tt+ai] = curLM$coefficients[[ri]]
-        ri = which(names(curLM$coefficients) == 'diag2')
+        ri = which(names(curLM$coefficients) == 'diagASD')
         results$diag_b1[tt+ai] = curLM$coefficients[[ri]]
-        ri = which(names(curLM$coefficients) == 'diag3')
+        ri = which(names(curLM$coefficients) == 'diagAD')
         results$diag_b2[tt+ai] = curLM$coefficients[[ri]]
         
+        
+        results$n[tt+ai] = length(temp[,1])
+        results$out[tt+ai] = length(temp[,1])-length(modDat$dv)
+        results$ageGroup[tt+ai] = ii-1
+        results$dvMean[tt+ai] = modDat$dv_mean[1]
+        results$dvSD[tt+ai] = modDat$dv_sd[1]
+        
       }else { #phase needs to be treated differently because it's circular
-        circdv = circular(dv, unit = 'degrees')
+        circdv = circular(modDat$dv, unit = 'degrees')
         dv_mean =  mean(circdv)[[1]]
         dv_sd = sd(circdv)[[1]]
-        test = cbind(cos(dv*(pi/180)), sin(dv*(pi/180)))
+        test = cbind(cos(modDat$dv*(pi/180)), sin(modDat$dv*(pi/180)))
         curLM = lm(test ~ modDat$age + modDat$sex + modDat$diag  + modDat$IQ )
         aovTab = Anova(curLM, type = 3)
         outtests <- car:::print.Anova.mlm
@@ -488,15 +313,15 @@ for(ii in 2:length(ageGroups)){
         ri = which(grepl('age', row.names(tab)))
         results$age[tt+ai] = (tab$Df[1] * tab$`approx F`[ri]) / 
           (tab$Df[ri] * tab$`approx F`[ri] + tab$`den Df`[ri])
+        
+        results$n[tt+ai] = length(temp[,1])
+        results$out[tt+ai] = length(temp[,1])-length(modDat$dv)
+        results$ageGroup[tt+ai] = ii-1
+        results$dvMean[tt+ai] = dv_mean
+        results$dvSD[tt+ai] = dv_sd
       }
       
-      #shared outputs for phase and other
-      results$n[tt+ai] = n
-      results$out[tt+ai] = n-length(dv)
-      results$outlierFirst[tt+ai] = n - length(nonOut)
-      results$ageGroup[tt+ai] = ii-1
-      results$dvMean[tt+ai] = dv_mean
-      results$dvSD[tt+ai] = dv_sd
+      
     }
     
     
@@ -603,10 +428,10 @@ for(vari in 1:4){
       scale_y_continuous(expand = c(0, 0), breaks = seq(0,100,20)) + 
       geom_vline(xintercept = .05, linetype = 'dashed', size = 5)
       
-    png(paste('effect_', predNames[vari], '_', as.character(agei), '.png',sep=''),         # File name
+    png(paste(figPath, 'effect_', predNames[vari], '_', as.character(agei), '.png',sep=''),         # File name
         width=1024, height=768)
     print(outPlot)
-    dev.off()       
+    dev.off()
   }  
 }
 
@@ -638,7 +463,7 @@ outPlot <-ggplot(allEffects, aes(x=agreement, y=effectSize, color = predictor)) 
                  ylab('effect size (\U1D702\U00B2\U209A)') + 
                  scale_x_continuous(expand = c(0, 0), limits = c(0, 1.01), breaks = seq(0,1,.25)) +
                  scale_y_continuous(expand = c(0, 0), limits = c(0, .65), breaks = seq(0,.65,.1))
-png('effect_agree_relationship.png',         # File name
+png(paste(figPath, 'effect_agree_relationship.png', sep = ''),         # File name
     width=400, height=768)
 print(outPlot)
 dev.off()         
@@ -666,7 +491,7 @@ for(vari in 1:4){
       scale_y_continuous(expand = c(0, 0))+ 
       geom_vline(xintercept = .8, linetype = 'dashed', size = 5)
     
-    png(paste('stability_', predNames[vari], '_', '.png',sep=''),         # File name
+    png(paste(figPath, 'stability_', predNames[vari], '_', '.png',sep=''),         # File name
         width=1024, height=768)
     print(outPlot)
     dev.off()       
@@ -682,11 +507,25 @@ goodPreds = data.frame('age'= c(0,0,0),
                        'IQ'= c(0,0,0), 
                        'diagnosis'= c(0,0,0),
                        row.names = ageLabs)
+
+#this data frame is used to make supplemental table 1
+allVarsPredByDiag = data.frame('dependentVariable' = c(0), 
+                               'Diag' = c(0),
+                               'diag_b1' = c(0),
+                               'diag_b2' = c(0),
+                               'age' = c(0))
+alli = 1
+
 for(vari in 1:4) { 
   for(agei in 1:3){
     temp = resultsDif[resultsDif$ageGroup == agei,]
     tempRes = resultsTRAIN[resultsDif$ageGroup == agei,]
     candidates = which(temp[predNames[vari]] > .8 & tempRes[predNames[vari]] > thresh)
+    if(vari==4){
+      allVarsPredByDiag[alli:(length(candidates)+alli-1),1:4] = tempRes[candidates,c(1,5,9,10)]
+      allVarsPredByDiag[alli:(length(candidates)+alli-1),5] = agei 
+      alli = alli + length(candidates)
+    }
     goodPreds[agei,vari] = length(candidates)
   }
   
@@ -707,10 +546,10 @@ chisq.test(goodPreds)
 
 
 #### choosing the best plot for each 
-# dat2 = read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
-dat2 = read.csv(paste(path, "trainSet.csv"))
-dat2 <- dat2 %>% select(-X)
-comboDat = rbind(dat2, dat)
+# datTrain = read.csv("C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\trainSet.csv")
+# datTrain = read.csv(paste(path, "trainSet.csv", sep = ''))
+# datTrain <- datTrain %>% select(-X)
+comboDat = rbind(datTrain, dat)
 comboDat$ageGroup = 1
 comboDat$ageGroup[comboDat$age>ageGroups[2]] = 2
 comboDat$ageGroup[comboDat$age>ageGroups[3]] = 3
@@ -731,7 +570,7 @@ vari = 1
     target = candidates[which(tempRes[candidates,predNames[vari]]==max(tempRes[candidates,predNames[vari]]))]
     targName = temp$dependentVariable[target]
   if(length(target)>0){
-    limVals = quantile(comboDat[,targName], c(.1,.9))
+    limVals = quantile(comboDat[,targName], c(.1,.9), na.rm = T)
     limVals = c(limVals[1] - (limVals[2]-limVals[1])*.2,
                 limVals[2] + (limVals[2]-limVals[1])*.2)
   outPlot <- ggplot(comboDat, aes_string(x = 'age', y = targName, color = 'group', shape = 'sex', size = 'IQ')) +
@@ -751,10 +590,10 @@ vari = 1
     geom_vline(xintercept = ageGroups[2], linetype = 'dashed', linewidth = 2, alpha = .75)+ 
     geom_vline(xintercept = ageGroups[3], linetype = 'dashed', linewidth = 2, alpha = .75)
   # rect(1, 5, 3, 7, col="white")
-  # png(paste( 'bestPredicted_',predNames[vari],'_', agei, '.png', sep = ''),         # File name
-  #     width=1024, height=768)
+  png(paste(figPath, 'bestPredicted_',predNames[vari],'_', agei, '.png', sep = ''),         # File name
+      width=1024, height=768)
   print(outPlot)
-  # dev.off()
+  dev.off()
   }
   }
 
@@ -767,7 +606,7 @@ for(agei in 1:3){
   target = candidates[which(tempRes[candidates,predNames[vari]]==max(tempRes[candidates,predNames[vari]]))]
   targName = temp$dependentVariable[target]
   if(length(target)>0){
-    limVals = quantile(comboDat[,targName], c(.1,.9))
+    limVals = quantile(comboDat[,targName], c(.1,.9), na.rm = T)
     limVals = c(limVals[1] - (limVals[2]-limVals[1])*.2,
                 limVals[2] + (limVals[2]-limVals[1])*.2)
     outPlot <-  comboDat %>% 
@@ -792,7 +631,7 @@ for(agei in 1:3){
       # geom_vline(xintercept = ageGroups[2], linetype = 'dashed', linewidth = 2, alpha = .75)+ 
       # geom_vline(xintercept = ageGroups[3], linetype = 'dashed', linewidth = 2, alpha = .75)
     # rect(1, 5, 3, 7, col="white")
-    png(paste( 'bestPredicted_',predNames[vari],'_', agei, '.png', sep = ''),         # File name
+    png(paste(figPath, 'bestPredicted_',predNames[vari],'_', agei, '.png', sep = ''),         # File name
         width=1024, height=768)
     print(outPlot)
     dev.off()
@@ -840,14 +679,14 @@ for(agei in 1:3){
   temp = resultsDif[resultsDif$ageGroup == agei,]
   tempRes = resultsTRAIN[resultsDif$ageGroup == agei,]
   candidates = which(temp[predNames[vari]] > .8 & tempRes[predNames[vari]] > thresh)
-  if(agei==1){
-    target = candidates[6]
-  }else{
-    target = candidates[which(tempRes[candidates,predNames[vari]]==max(tempRes[candidates,predNames[vari]]))]
-  }
+  # if(agei==1){
+  #   target = candidates[6]
+  # }else{
+    target = candidates[which(tempRes[candidates,'Diag']==max(tempRes[candidates,'Diag']))]
+  # }
   targName = temp$dependentVariable[target]
  if(length(target)>0){
-    limVals = quantile(comboDat[,targName], c(.1,.9))
+    limVals = quantile(comboDat[,targName], c(.1,.9), na.rm = T)
     limVals = c(limVals[1] - (limVals[2]-limVals[1])*.5,
                 limVals[2] + (limVals[2]-limVals[1])*.5)
     # plotDat <- comboDat %>% filter( group %in% c('CON', 'AD')) %>% arrange(ageGroup, group)
@@ -874,7 +713,7 @@ for(agei in 1:3){
       ggtitle(paste(targName, '; age group: ', as.character(agei), sep = ''))+
       guides(color = guide_legend(override.aes = list(size=10))) 
     # rect(1, 5, 3, 7, col="white")
-    png(paste( 'bestPredicted_',predNames[vari],'_', agei, '.png', sep = ''),         # File name
+    png(paste(figPath, 'bestPredicted_',predNames[vari],'_', agei, '.png', sep = ''),         # File name
         width=1024, height=768)
     print(outPlot)
     dev.off()
@@ -904,138 +743,97 @@ plotValues = data.frame('hitRate' = rep(0,300),
 for(agei in 1:3){
   temp = resultsDif[resultsDif$ageGroup == agei,]
   tempRes = resultsTRAIN[resultsDif$ageGroup == agei,]
+  tempTrain = datTrain %>% filter(age>ageGroups[agei], age <=ageGroups[agei+1])
+  tempTest = dat %>% filter(age>ageGroups[agei], age <= ageGroups[agei+1])
+  # tempTest = dat %>% filter(age>ageGroups[agei], age <=ageGroups[agei+1])
   candidates = which(temp$Diag > .8 & tempRes$Diag > thresh)
-  if(agei==1){
-    target = candidates[6]
-  }else{
-    target = candidates[which(tempRes[candidates,predNames[vari]]==max(tempRes[candidates,predNames[vari]]))]
-  }
+
+  target = candidates[which(tempRes[candidates,'Diag']==max(tempRes[candidates,'Diag']))]
+  
   targName = temp$dependentVariable[target]
-  limVals = quantile(comboDat[,targName], c(.025,.975))
+  limVals = quantile(tempTrain[,targName], c(.025,.975), na.rm = T)
   # limVals = c(limVals[1] - (limVals[2]-limVals[1])*.5,
   #             limVals[2] + (limVals[2]-limVals[1])*.5)
   
-  curDat = comboDat %>% filter(ageGroup==agei)
-  groupID = rep(1,length(curDat$group))
-  groupID[curDat$group != 'CON'] = 2
+
+  # make edits here for AD vs. CON OR AD+ASD vs. CON
+  groupID = rep(1,length(tempTrain$group)) # 2 = 'control'
+  groupID[tempTrain$group != 'CON'] = 2 # 1 = 'patient'
+  # groupID[tempTrain$group == 'ASD'] = NA
+  
   #ALL AD AND ASD SUBS CODED AS 2
-  biomark = curDat[,targName]
+  biomark = tempTrain[,targName]
+  missingDat = which(is.na(biomark))
+  if(length(missingDat)>0){
+    groupID = groupID[-missingDat]
+    biomark = biomark[-missingDat]
+  }
+  missingDat = which(is.na(groupID))
+  if(length(missingDat)>0) {
+    groupID = groupID[-missingDat]
+    biomark = biomark[-missingDat]
+  }
+  
+  #get the variables for the test set: 
+  groupID2 = rep(1,length(tempTest$group)) # 2 = 'control'
+  groupID2[tempTest$group != 'CON'] = 2 # 2 = 'patient'
+  # groupID2[tempTest$group == 'ASD'] = NA
+  
+  #ALL AD AND ASD SUBS CODED AS 2
+  biomark2 = tempTest[,targName]
+  missingDat2 = which(is.na(biomark2))
+  if(length(missingDat2)>0){
+    groupID2 = groupID2[-missingDat2]
+    biomark2 = biomark2[-missingDat2]
+  }
+  missingDat2 = which(is.na(groupID2))
+  if(length(missingDat2)>0) {
+    groupID2 = groupID2[-missingDat2]
+    biomark2 = biomark2[-missingDat2]
+  }
+  
   criteria = rev(seq(limVals[1], limVals[2], (limVals[2] - limVals[1])/100))
   criteria = criteria[1:100]
-  #is the AD group higher or lower than the CON group? 
-  #default is autistic < control
-  if(agei==1){
-    biomark = biomark * -1
-  }
+  # #is the AD group higher or lower than the CON group? 
+  # #default is autistic > control
+  if(mean(biomark[groupID==1]) > mean(biomark[groupID==2])){
+    print("POTENTIAL PROBLEM")
+  } 
   
-  getROC <- function(biomark, groupID, criteria) {
-  ROC = data.frame('crit' = criteria, 
-                   'hits' = criteria,
-                   'misses'=criteria,
-                   'CRs' = criteria, 
-                   'FAs' = criteria,
-                   'TP' = criteria, 
-                   'TN' = criteria,
-                   'FP' = criteria, 
-                   'FN' = criteria, 
-                   'accRaw' = criteria)
- 
-  AUC = 0
-  for(ci in 1:length(criteria)){
-    guess = rep(1,length(biomark))
-    guess[biomark>criteria[ci]] = 2
-    ROC$hits[ci] = sum(guess==2 & groupID==2)
-    ROC$misses[ci] = sum(guess==1 & groupID==2)
-    ROC$CRs[ci] = sum(guess==1 & groupID==1)
-    ROC$FAs[ci] = sum(guess==2 & groupID==1)
-    ROC$TP[ci] = sum(guess==2 & groupID==2) / sum(groupID==2)
-    ROC$TN[ci] = sum(guess==1 & groupID==1) / sum(groupID==1)
-    ROC$FP[ci] = sum(guess==2 & groupID==1) / sum(groupID==1)
-    ROC$FN[ci] = sum(guess==1 & groupID==2) / sum(groupID==2)
-    ROC$accRaw[ci] = (sum(guess==2 & groupID==2) + sum(guess==1 & groupID==1)) / length(groupID)
-    if(ci>1){
-      baseDist = ROC$FP[ci] - ROC$FP[ci-1]
-      #top triangle area: 
-      tria = ((ROC$TP[ci] - ROC$TP[ci-1]) * baseDist) / 2
-      #base rectangle area: 
-      reca = ROC$TP[ci-1] * baseDist
-      AUC = AUC + tria + reca
-    } else {
-      baseDist = ROC$FP[ci]
-      #top triangle area: 
-      tria = ((ROC$TP[ci]) * baseDist) / 2
-      AUC = AUC + tria
-    }
-    
-  }
-  baseDist = 1 - ROC$FP[ci]
-  #top triangle area: 
-  tria = ((1 - ROC$TP[ci]) * baseDist) / 2
-  #base rectangle area: 
-  reca = ROC$TP[ci] * baseDist
-  AUC = AUC + tria + reca
-  ROC$AUC = AUC
- 
-  
-  #sensitivity, true positive rate
-  ROC$TPR = ROC$hits/(ROC$hits + ROC$misses)
-  #fallout, false positive rate
-  ROC$FPR = ROC$FAs/(ROC$FAs + ROC$CRs)
-  #specificity, true negative rate
-  ROC$TNR = ROC$CRs/(ROC$CRs + ROC$FAs)
-  #accuracy
-  ROC$acc = (ROC$TP + ROC$TN) / (ROC$TP + ROC$TN + ROC$FP + ROC$FN)
-  #what's the optimal criterion? 
-  ci = which(ROC$acc == max(ROC$acc))
-  
-  baseRate = sum(groupID==2) / length(groupID)
-  #bayesian posterior: 
-  post = ROC$TP[ci]*baseRate / (ROC$TP[ci]*baseRate + ROC$FP[ci]*(1-baseRate))
-  ROC$base = baseRate
-  ROC$post = post
-  
-  #false positive index
-  guess = rep(1,length(biomark))
-  guess[biomark>criteria[ci]] = 2
-  ROC$FPi = sum(guess==2 & groupID==1) / sum(guess==2 & groupID==2)
-  #precision, positive predictive value
-  ROC$PPV = ROC$hits[ci] / (ROC$hits[ci] + ROC$FAs[ci])
-  #negative predictive value
-  ROC$NPV = ROC$CRs[ci] / (ROC$CRs[ci] + ROC$misses[ci])
-  
-  
-  
-  return(ROC)
-  }
+  #inverted criterion logic
   ROC = getROC(biomark, groupID, criteria)
+  ROC2 = getROC(biomark2, groupID2, criteria)
+  
+  # ROC2 = getROC(biomark, groupID, criteria)
   ci = which(ROC$acc == max(ROC$acc))
-  SDTTable$AUC[agei] = round(ROC$AUC[1],2)
-  SDTTable$accuracy[agei] = round(ROC$acc[ci],2)
-  SDTTable$sensitivity[agei] = round(ROC$TPR[ci],2)
-  SDTTable$specificity[agei] = round(ROC$TNR[ci],2)
+  ci = ci[1]
+  SDTTable$AUC[agei] = paste(round(ROC$AUC[1],2), ' (', round(ROC2$AUC[1],2), ')', sep = '') 
+  SDTTable$accuracy[agei] = paste(round(ROC$acc[ci],2), ' (', round(ROC2$acc[ci],2), ')', sep = '')
+  SDTTable$sensitivity[agei] = paste(round(ROC$TPR[ci],2), ' (', round(ROC2$TPR[ci],2), ')', sep = '')
+  SDTTable$specificity[agei] = paste(round(ROC$TNR[ci],2), ' (', round(ROC2$TNR[ci],2), ')', sep = '')
 
 
   
   
-  ROC[102:103,] = c(100,100)
-  ROC$acc[102:103] = c(0,1)
-  outPlot <- ggplot(ROC, aes(x=FP, y=TP, size = log10(acc))) + 
-    geom_point(show.legend = T, alpha = .75, color = '#228B22') +
-    scale_size_continuous(range = c(.25, 45)) + 
-    geom_abline(slope = 1, intercept = 0, size = 2, linetype = 'dashed') + 
-    ylim(c(0,1)) + 
-    xlim(c(0,1)) +
-    theme_classic() +
-    theme(axis.line = element_line(color = 'black', size = 3),
-          axis.ticks = element_line(colour = "black", size = 2),
-          axis.ticks.length=unit(-.25, "cm"),
-          text = element_text(size = 20),
-          panel.grid.major = element_line(color = "grey",
-                                          size = 2,
-                                          linetype = 2)) +
-    ylab('hit rate') +
-    xlab('false alarm rate') + 
-    ggtitle(paste('ROC; age group: ', as.character(agei), sep = ''))
+  ROC[101:102,] = c(100,100)
+  ROC$acc[101:102] = c(0,1)
+  # outPlot <- ggplot(ROC, aes(x=FP, y=TP, size = log10(acc))) + 
+  #   geom_point(show.legend = T, alpha = .75, color = '#228B22') +
+  #   scale_size_continuous(range = c(.25, 45)) + 
+  #   geom_abline(slope = 1, intercept = 0, size = 2, linetype = 'dashed') + 
+  #   ylim(c(0,1)) + 
+  #   xlim(c(0,1)) +
+  #   theme_classic() +
+  #   theme(axis.line = element_line(color = 'black', size = 3),
+  #         axis.ticks = element_line(colour = "black", size = 2),
+  #         axis.ticks.length=unit(-.25, "cm"),
+  #         text = element_text(size = 20),
+  #         panel.grid.major = element_line(color = "grey",
+  #                                         size = 2,
+  #                                         linetype = 2)) +
+  #   ylab('hit rate') +
+  #   xlab('false alarm rate') + 
+  #   ggtitle(paste('ROC; age group: ', as.character(agei), sep = ''))
   # png(paste( 'bestPredicted_ROC',predNames[vari],'_', agei, '.png', sep = ''),         # File name
   #     width=1024, height=768)
   # print(outPlot)
@@ -1053,16 +851,24 @@ for(agei in 1:3){
   for(bi in 1:length(brDF$base)){
     print(bi)
     baseRate = brDF$base[bi]
-    ADGroup = sample(biomark[groupID==2], round(baseRate*100000), replace = T )
-    CONGroup = sample(biomark[groupID==1], round((1-baseRate)*100000), replace = T)
+    ADGroup = sample(biomark2[groupID2==2], round(baseRate*100000), replace = T )
+    CONGroup = sample(biomark2[groupID2==1], round((1-baseRate)*100000), replace = T)
     simBiomark = c(ADGroup, CONGroup)
     simID = rep(1,length(simBiomark))
     simID[1:length(ADGroup)] = 2
     simROC = getROC(simBiomark, simID, criteria)
-    brDF$infoGain[bi] = simROC$post[1] - simROC$base[1]
-    brDF$FPi[bi] = simROC$FPi[1]
-    brDF$PPV[bi] = simROC$PPV[1]
-    brDF$post[bi] = simROC$post[1]
+    post = simROC$TP[ci]*baseRate / (simROC$TP[ci]*baseRate + simROC$FP[ci]*(1-baseRate))
+   
+    brDF$infoGain[bi] = post - baseRate
+    
+    guess = rep(1,length(simBiomark))
+    guess[simBiomark>criteria[ci]] = 2
+    
+    
+    brDF$FPi[bi] = sum(guess==2 & simID==1) / sum(guess==2 & simID==2)
+    
+    brDF$PPV[bi] = simROC$hits[ci] / (simROC$hits[ci] + simROC$FAs[ci])
+    brDF$post[bi] = post
     
   }
   
@@ -1150,7 +956,7 @@ SDTTable %>%
   kbl(align = 'c', digits = 2) %>% 
   kable_classic(full_width = F, 
                 font_size = 20) %>%
-  column_spec(1, border_right = T)%>%
+  column_spec(1, border_right = T) %>%
   footnote(general = "Signal detection theory measures of biomarker performance. 
            AUC = area under the receiver operating characteristic curve
            IG_.0148 = information gain when base rate is .0148
@@ -1162,12 +968,13 @@ SDTTable %>%
 
 ##### plotting signal detection theory measure results ####
 plotValues$ageGroup = as.factor(plotValues$ageGroup)
+plotValues$ageGroup = factor(plotValues$ageGroup)
 outPlot <- ggplot(plotValues, aes(y=hitRate, x=FArate, color = ageGroup)) + 
   geom_line(show.legend = T, size = 5) + 
   geom_abline(slope = 1, intercept = 0, size = 2, linetype = 'dashed') + 
   ylim(c(0,1)) + 
   xlim(c(0,1)) +
-  theme_classic() +
+  theme_classic() + 
   theme(axis.line = element_line(color = 'black', size = 3),
         axis.ticks = element_line(colour = "black", size = 2),
         axis.ticks.length=unit(-.25, "cm"),
@@ -1178,7 +985,7 @@ outPlot <- ggplot(plotValues, aes(y=hitRate, x=FArate, color = ageGroup)) +
   ylab('hit rate') +
   xlab('false alarm rate') + 
   ggtitle(paste('ROC', sep = ''))
-png(paste( 'ROC_all',predNames[vari],'_', agei, '.png', sep = ''),         # File name
+png(paste(figPath, 'ROC_all',predNames[vari],'_', agei, '.png', sep = ''),         # File name
     width=1024, height=768)
 print(outPlot)
 dev.off()
@@ -1200,7 +1007,7 @@ outPlot <- ggplot(plotValues, aes(x=baseRate, y = precision, color = ageGroup)) 
                                         linetype = 2)) +
   ylab('precision') +
   ggtitle(paste('posterior probability', sep = ''))
-png(paste( 'precision_all',predNames[vari],'_', agei, '.png', sep = ''),         # File name
+png(paste(figPath, 'precision_all',predNames[vari],'_', agei, '.png', sep = ''),         # File name
     width=1024, height=768)
 print(outPlot)
 dev.off()
@@ -1218,10 +1025,10 @@ outPlot <- ggplot(plotValues, aes(x=baseRate, y = infoGain, color = ageGroup)) +
         panel.grid.major = element_line(color = "grey",
                                         size = 2,
                                         linetype = 2)) +
-  ylim(c(0,.25)) + 
+  ylim(c(0,.3)) + 
   ylab('information gain') +
   ggtitle(paste('information gain', sep = ''))
-png(paste( 'infoGain_all',predNames[vari],'_', agei, '.png', sep = ''),         # File name
+png(paste(figPath, 'infoGain_all',predNames[vari],'_', agei, '.png', sep = ''),         # File name
     width=1024, height=768)
 print(outPlot)
 dev.off()
@@ -1244,7 +1051,7 @@ outPlot <- ggplot(plotValues, aes(x=baseRate, y = FPi, color = ageGroup)) +
   ylab('count FP / count TP') +
   xlim(c(0,.5))+
   ggtitle(paste('false positive index', sep = ''))
-png(paste( 'FPi_all',predNames[vari],'_', agei, '.png', sep = ''),         # File name
+png(paste(figPath, 'FPi_all',predNames[vari],'_', agei, '.png', sep = ''),         # File name
     width=1024, height=768)
 print(outPlot)
 dev.off()
