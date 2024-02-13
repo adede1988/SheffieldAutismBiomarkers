@@ -399,7 +399,21 @@ theme_set(theme_gray(base_size = 30))
 
 #### evaluate outliers during analysis #### 
 
+#what percentage of model fits involved zero outliers? 
 sum(resultsTRAIN$out==0) / length(resultsTRAIN$out)
+#what was the maximum number of outliers? 
+max(resultsTRAIN$out)
+
+
+resultsTRAIN %>% group_by(type) %>% summarize(max(out), mean(out), min(out))
+
+outlierCounts <- dat %>%
+  group_by(group) %>%
+  summarize(across(everything(), ~ sum(is.na(.))))
+
+rowMeans(outlierCounts[,2:1179])
+
+
 ggplot(resultsTRAIN, aes(x=out, color = type, fill = type)) +
   colScale +
   fillScale + 
