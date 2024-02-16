@@ -271,7 +271,7 @@ modelPlot <- function(modDat, varName, ii){
 
 
 
-getROC <- function(biomark, groupID, criteria) {
+getROC <- function(biomark, groupID, criteria, flipLogic = F) {
   ROC = data.frame('crit' = criteria,
                    'hits' = criteria,
                    'misses'=criteria,
@@ -282,11 +282,20 @@ getROC <- function(biomark, groupID, criteria) {
                    'FP' = criteria,
                    'FN' = criteria,
                    'accRaw' = criteria)
+  
+  if(flipLogic){
+    criteria = rev(criteria)
+    ROC$crit = criteria
+  }
 
   AUC = 0
   for(ci in 1:length(criteria)){
     guess = rep(1,length(biomark))
-    guess[biomark>criteria[ci]] = 2
+    if(flipLogic){
+      guess[biomark<criteria[ci]] = 2
+    } else {
+      guess[biomark>criteria[ci]] = 2
+    }
     ROC$hits[ci] = sum(guess==2 & groupID==2)
     ROC$misses[ci] = sum(guess==1 & groupID==2)
     ROC$CRs[ci] = sum(guess==1 & groupID==1)
