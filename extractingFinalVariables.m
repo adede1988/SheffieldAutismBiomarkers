@@ -5,7 +5,7 @@
 
 
 
-prefix = 'Z:/User/pc1aod/'; %subNum = 1; chan = 1; 
+prefix = 'H:\'; %subNum = 1; chan = 1; 
 %HPC: 
 % prefix = '/shared/dede_group/User/pc1aod/';
 
@@ -24,7 +24,7 @@ transforms = [1,2,3,4];
 numfrex = length(frex); 
 stds = linspace(2,5,numfrex);
 
-exampleDat = load('Z:\User\pc1aod\SUMDAT\biomarkCon_1_1.mat').data; 
+exampleDat = load('H:\SUMDAT\biomarkCon_1_1.mat').data; 
 labels = exampleDat.labels; 
 Th = exampleDat.Th; 
 Rd = exampleDat.Rd; 
@@ -327,11 +327,13 @@ for ii = 1:length(filenames)
     temp = ispc(freqBounds(fi-1)+1:freqBounds(fi), :,:);
     temp = squeeze(mean(temp, 1));
   for asi = 1:length(asymNames)
+    temp = ispc(freqBounds(fi-1)+1:freqBounds(fi), :,:);
+    temp = squeeze(mean(temp, 1));
     asVar = asymVars{asi}; 
     idx1 = arrayfun(@(y) find(cellfun(@(x) strcmp(y, x), labels)), asVar{1}); 
     idx2 = arrayfun(@(y) find(cellfun(@(x) strcmp(y, x), labels)), asVar{2});
-    meanispc = mean(diag(temp(idx1, idx2))); 
-    filenames(ii).(['ispc_' freqNames{fi-1} '_' asymNames{asi}]) = longISPC;
+    meanispc = mean(arrayfun(@(x,y)  temp(x, y), idx1, idx2)); 
+    filenames(ii).(['ispc_' freqNames{fi-1} '_' asymNames{asi}]) = meanispc;
      
 
 
@@ -467,7 +469,7 @@ end
 %% save out the final struct as a .csv
 
 
-writetable(struct2table(filenames), 'C:\Users\pc1aod\Documents\GitHub\SheffieldAutismBiomarkers\autismBiomarkersAllData2.csv')
+writetable(struct2table(filenames), 'R:\MSS\Johnson_Lab\dtf8829\GitHub\SheffieldAutismBiomarkers\autismBiomarkersAllData3.csv')
 
 
 

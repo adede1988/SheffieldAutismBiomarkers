@@ -2,10 +2,8 @@
 
 Welcome to the repository of code assocaited with the Sheffield Autism Biomarkers project. 
 
-In the near future the preprint link will be found here: 
+Preprint link: https://www.medrxiv.org/content/10.1101/2023.05.21.23290300v1
 
-
-And in the somewhat later but hopefully not that much later future the peer reviewed and published link will be found here: 
 
 **CODE:**
 This repository contains scripts and functions that fall into several different categories. A detailed explanation of how these different code categories interact with each other can be found in the supplement.pdf file contained in the repository. Here, we provide brief descriptions of the different categories that the code contained in this repository belongs to:  
@@ -29,11 +27,11 @@ Summary variable extraction:
 The scripts stitchFilesTogether.m and extractingFinalVariables.m were used to combine single channel output variables into participant level output variables and extract final summary variables from participant level outputs, respectively. These are highly specific to the analysis performed for this project and will be most useful as examples rather than immediately useful code. 
 
 Inferential statistics: 
-The R script effectSizeCalculations.R was used to perform all inferential statistics and generate many of the plots included in the final paper. It is highly specific to the particular set of analyses performed here. 
+The R script effectSizeCalculations_allData_final.R was used to perform all inferential statistics and generate many of the plots included in the final paper. It is highly specific to the particular set of analyses performed here and is intended to help clarify specific methods questions arising from our analysis. It is not likely to be helpful as more than an example to others attempting a similar analysis.  
 
 **DATA:**
 In addition to code, this repository contains the extracted summary variables that were analyzed in this project. Specifically, there are three key .csv files: 
-autismBiomarkersAllData2.csv this file contains all of the extracted summary variables with one participant per row of the .csv file. 
+autismBiomarkersAllData3.csv this file contains all of the extracted summary variables with one participant per row of the .csv file. 
 testSet.csv and trainSet.csv are the randomly split halves of the full dataset. The code used to perform the randomization can be found in the effectSizeCalculations.R script in a long comment. The randomization was performed only once. 
 
 finally, the file standardEEGlocs.csv contains the standard 32 channel montage that all data were projected into for all of these analyses used throughout this project.
