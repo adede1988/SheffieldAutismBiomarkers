@@ -32,6 +32,6 @@ The R script effectSizeCalculations_allData_final.R was used to perform all infe
 **DATA:**
 In addition to code, this repository contains the extracted summary variables that were analyzed in this project. Specifically, there are three key .csv files: 
 autismBiomarkersAllData3.csv this file contains all of the extracted summary variables with one participant per row of the .csv file. 
-testSet.csv and trainSet.csv are the randomly split halves of the full dataset. The code used to perform the randomization can be found in the effectSizeCalculations.R script in a long comment. The randomization was performed only once. 
+
 
 finally, the file standardEEGlocs.csv contains the standard 32 channel montage that all data were projected into for all of these analyses used throughout this project.
