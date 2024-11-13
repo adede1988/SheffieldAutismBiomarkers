@@ -25,7 +25,7 @@ opts = setvaropts(opts, "label", "WhitespaceRule", "preserve");
 opts = setvaropts(opts, "label", "EmptyFieldRule", "auto");
 
 % Import the data
-standardEEGlocs = readtable(join([prefix "CODE/GEDbounds_clusterImprove/standardEEGlocs.csv"],''), opts);
+standardEEGlocs = readtable(join([codePre "SheffieldAutismBiomarkers/standardEEGlocs.csv"],''), opts);
 
 
 %% Clear temporary variables

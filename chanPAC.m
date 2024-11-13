@@ -59,7 +59,8 @@ function [rawMeans,MI,pacSig,phasePref, MINull] = chanPAC(chanDat)
     nullRes = single(zeros([200, size(results)]));
 
     for snip = 1:size(chanDat.data,3)
-
+        snip
+        tic
         hz = linspace(0, chanDat.srate, size(chanDat.data,2)*3 );
         snipDat = chanDat.data(:,:,snip);
         padDat = flip(snipDat,2);
@@ -105,7 +106,7 @@ function [rawMeans,MI,pacSig,phasePref, MINull] = chanPAC(chanDat)
                    
                 end
             end
-        
+        toc
     end
             
     rawMeans = squeeze(mean(results, 1)); 

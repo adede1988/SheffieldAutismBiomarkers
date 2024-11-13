@@ -10,10 +10,10 @@ library(circular)
 library(kableExtra)
 library(pracma)
 library(glmtoolbox)
-source('R:/MSS/Johnson_Lab/dtf8829/GitHub/SheffieldAutismBiomarkers/helperFuncsFinal.R')
+source('G:\\My Drive\\GitHub/SheffieldAutismBiomarkers/helperFuncsFinal.R')
 
 ## set path to github repo on local machine here: 
-path = "R:\\MSS\\Johnson_Lab\\dtf8829\\GitHub\\SheffieldAutismBiomarkers\\"
+path = "G:\\My Drive\\GitHub\\SheffieldAutismBiomarkers\\"
 # path = "C:\\Users\\Adam Dede\\Documents\\GitHub\\SheffieldAutismBiomarkers\\"
 figPath = "G:\\My Drive\\Milne\\pubFigPanels\\"
 test <- read.csv(paste(path, "autismBiomarkersAllData3.csv", sep = ''))
@@ -47,7 +47,7 @@ makeDemoTable(dat)
 ageGroups = c(0,97,127,999)
 
 
-#### randomization code written on 29/11/2022 and run one time
+#### randomization code written on 29/11/2022 
 #see helperFuncs.R for code specifications 
 
 
@@ -63,6 +63,8 @@ test <- read.csv(paste(path, "autismBiomarkersAllData3.csv", sep = ''))
 test$nbChanOrig[test$nbChanOrig==999] = 124 #due to a data import error, less than 10 participants had their nbChanOrig values missing
 
 dat <- filter(test, group %in% c('CON', 'AD', 'ASD'), eyes == 'open')
+
+
 
 #AD subjects above and below 250 months of age
 sum(dat$group=='AD' & dat$age > 250) 
@@ -80,6 +82,13 @@ dat <- filter(dat, nbChanFinal/nbChanOrig >= .5)
 results <- getResults(dat, varNames, ageGroups)
 dat <- results[[2]]
 results <- results[[1]]
+
+#do analysis a second time but this time do it without the severity split: 
+# dat2 = dat
+# dat2$group[dat2$group == 'ASD'] = 'AD'
+# results2 = getResults(dat2, varNames, ageGroups)
+# dat2 <- results2[[2]]
+# results2 <- results2[[1]]
 
 repeats = 150
 savePath = "R:\\MSS\\Johnson_Lab\\dtf8829\\GitHub\\SheffieldAutismBiomarkers\\bootstrapAnalysis\\"

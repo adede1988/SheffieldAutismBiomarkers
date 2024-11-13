@@ -70,10 +70,13 @@ if ~isfield(EEG, 'noiseRemoved')
         if ~isempty(noiseChans) 
              %checking to see if there are channels with super high power
              %anywhere
+             EEG.removedChans = EEG.chanlocs(noiseChans); 
              EEG.chanlocs(noiseChans) = []; 
              EEG.nbchan = EEG.nbchan - length(noiseChans); 
              EEG.data(noiseChans,:,:) = []; 
              maxDeflection(noiseChans,:) = []; 
+        else
+            EEG.removedChans = []; 
         end
          %remove trials where over 25% of channels have 100 microvolt
         %deflections
@@ -92,10 +95,13 @@ if ~isfield(EEG, 'noiseRemoved')
         if ~isempty(noiseChans) 
              %checking to see if there are channels with super high power
              %anywhere
+             EEG.removedChans = EEG.chanlocs(noiseChans); 
              EEG.chanlocs(noiseChans) = []; 
              EEG.nbchan = EEG.nbchan - length(noiseChans); 
              EEG.data(noiseChans,:,:) = []; 
              maxDeflection(noiseChans,:) = []; 
+        else
+            EEG.removedChans = []; 
         end
          %remove trials where over 25% of channels have 100 microvolt
         %deflections

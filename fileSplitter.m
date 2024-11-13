@@ -12,14 +12,7 @@ function [] = fileSplitter(EEG, path)
         out.srate = srate; 
         save(join([folder '/' name '_processed_temp' num2str(ii) '.mat'],''), "out")
 
-
     end
-
-
-    
-    
- 
-
 
 
 end

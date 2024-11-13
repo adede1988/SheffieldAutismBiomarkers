@@ -534,17 +534,18 @@ makeDemoTable <- function(dat){
   for(ii in 1:15) { 
     cur = filter(dat, group == dataSumTable$group[ii], dataSet == dataSumTable$data.set[ii])
     if(length(cur$age) > 0){
-      dataSumTable$IQ[ii] = paste(round(mean(cur$IQ, na.rm = T)), ' (', round(sd(cur$IQ, na.rm = T)), ')', sep='')
-      dataSumTable$age[ii] = paste(round(mean(cur$age)), ' (', round(sd(cur$age)), ')', sep='')
+      #replace na IQ values
+      dat$IQ[dat$group == dataSumTable$group[ii] & dat$dataSet == dataSumTable$data.set[ii] & is.na(dat$IQ)] = mean(cur$IQ, na.rm = T)
+      dataSumTable$IQ[ii] = paste(round(mean(cur$IQ, na.rm = T)), ' (', round(sd(cur$IQ, na.rm = T)),'; ', min(cur$IQ), '-', max(cur$IQ), ')', sep='')
+      dataSumTable$age[ii] = paste(round(mean(cur$age)), ' (', round(sd(cur$age)),'; ', min(cur$age), '-', max(cur$age), ')', sep='')
       dataSumTable$n.female[ii] = sum(cur$sex == 'F')
       dataSumTable$n.total[ii] = length(cur$sex)
       dataSumTable$orig.channels[ii] = paste(round(mean(cur$nbChanOrig)), ' (', round(sd(cur$nbChanOrig)), ')', sep='')
       dataSumTable$final.channels[ii] = paste(round(mean(cur$nbChanFinal)), ' (', round(sd(cur$nbChanFinal)), ')', sep='')
-      dataSumTable$orig.epochs[ii] = paste(round(mean(cur$nbTrialOrig)), ' (', round(sd(cur$nbTrialOrig)), ')', sep='')
-      dataSumTable$final.epochs[ii] = paste(round(mean(cur$nbTrialFinal)), ' (', round(sd(cur$nbTrialFinal)), ')', sep='')
+      dataSumTable$orig.epochs[ii] = paste(round(mean(cur$nbTrialOrig[cur$nbTrialOrig<999])), ' (', round(sd(cur$nbTrialOrig[cur$nbTrialOrig<999])),'; ', min(cur$nbTrialOrig[cur$nbTrialOrig<999]), '-', max(cur$nbTrialOrig[cur$nbTrialOrig<999]), ')', sep='')
+      dataSumTable$final.epochs[ii] = paste(round(mean(cur$nbTrialFinal)), ' (', round(sd(cur$nbTrialFinal)),'; ', min(cur$nbTrialFinal), '-', max(cur$nbTrialFinal), ')', sep='')
       
-      #replace na IQ values
-      dat$IQ[dat$group == dataSumTable$group[ii] & dat$dataSet == dataSumTable$data.set[ii] & is.na(dat$IQ)] = mean(cur$IQ, na.rm = T)
+      
     }
   }
   
@@ -655,6 +656,17 @@ getModDat <- function(dat, varNames, tt, temp, ageGroups, ii, groupID){
     # outliers[tt,2] <<- sum(groupID[abs(dv_z)>5]==2)
     # outliers[tt,3] <<- sum(groupID[abs(dv_z)>5]==3)
     
+    #alternate outlier handling using max/min values: 
+
+    # dv[dv_z<-5] = min(dv[dv_z>-5])
+    # dv[dv_z>5] = max(dv[dv_z<5])
+    # age = temp$age
+    # sex = temp$sex
+    # IQ = temp$IQ
+    # gID = groupID[keep]
+    # ID = gID
+    
+    #as run for paper: 
     dv = dv[abs(dv_z)<5]
     age = temp$age[abs(dv_z)<5]
     sex = temp$sex[abs(dv_z)<5]
