@@ -9,8 +9,8 @@ import os
 import pandas as pd
 import numpy as np
 from fooof import FOOOF
-import matplotlib.pyplot as plt
-from scipy.stats import pearsonr 
+# import matplotlib.pyplot as plt
+# from scipy.stats import pearsonr 
 
 # Define the directory containing your CSV files
 folder_path = 'H:/testPSDs'  # Update this to your folder path
@@ -22,9 +22,15 @@ results = []
 f_range = [1, 30]  # Adjust as needed for your use case
 
 fileList = os.listdir(folder_path)
+completeList = os.listdir(os.path.join(folder_path,'complete'))
+fileList = [item for item in fileList if item not in completeList]
+fileList = [file for file in fileList if 'log' not in file]
+fileList = [file for file in fileList if 'rel' not in file]
+
 
 # Loop through all CSV files in the folder
-for ii in range(1715):
+for ii in range(len(fileList)):
+    print(round(ii / len(fileList), 3))
     if fileList[ii].endswith('.csv'):
         # Construct the full path to the CSV file
         file_path = os.path.join(folder_path, fileList[ii])
@@ -51,49 +57,52 @@ for ii in range(1715):
         exponent = fooof_obj.aperiodic_params_[1]  # FOOOF exponent (slope)
         offset = fooof_obj.aperiodic_params_[0]    # FOOOF offset
         
-        # Append the exponent and offset to the results list
-        results.append([exponent, offset, data.iloc[1,2], data.iloc[1,3]])
+        # add FOOOF results to the dataframe 
+        data['exponent'] = exponent
+        data['offset'] = offset
         
+        # save the results
+        data.to_csv(os.path.join(folder_path,'complete', fileList[ii]), index=False)
         
-# Convert the results list to a NumPy array for easier manipulation
-results_array = np.array(results)
+# # Convert the results list to a NumPy array for easier manipulation
+# results_array = np.array(results)
 
-# Extract exponents and offsets for plotting
-exponents = results_array[:, 0]
-exponentsOG = results_array[:, 2]
+# # Extract exponents and offsets for plotting
+# exponents = results_array[:, 0]
+# exponentsOG = results_array[:, 2]
 
-# Create a scatter plot of exponents vs. offsets
-plt.scatter(exponents, exponentsOG)
-plt.title('slope method comparison')
-plt.xlabel('Fooof calculated value')
-plt.ylabel('Voytek 2015 calcualted value')
-plt.grid(True)
-plt.show()
+# # Create a scatter plot of exponents vs. offsets
+# plt.scatter(exponents, exponentsOG)
+# plt.title('slope method comparison')
+# plt.xlabel('Fooof calculated value')
+# plt.ylabel('Voytek 2015 calcualted value')
+# plt.grid(True)
+# plt.show()
 
-# Perform Pearson correlation test
-correlation_coefficient, p_value = pearsonr(exponents, exponentsOG)
+# # Perform Pearson correlation test
+# correlation_coefficient, p_value = pearsonr(exponents, exponentsOG)
 
-# Print the correlation results
-print(f"Pearson Correlation Coefficient: {correlation_coefficient}")
-print(f"P-value: {p_value}")
+# # Print the correlation results
+# print(f"Pearson Correlation Coefficient: {correlation_coefficient}")
+# print(f"P-value: {p_value}")
 
 
-# Extract exponents and offsets for plotting
-exponents = results_array[:, 1]
-exponentsOG = results_array[:, 3]
+# # Extract exponents and offsets for plotting
+# exponents = results_array[:, 1]
+# exponentsOG = results_array[:, 3]
 
-# Create a scatter plot of exponents vs. offsets
-plt.scatter(exponents, exponentsOG)
-plt.title('offset method comparison')
-plt.xlabel('Fooof calculated value')
-plt.ylabel('Voytek 2015 calcualted value')
-plt.grid(True)
-plt.show()
+# # Create a scatter plot of exponents vs. offsets
+# plt.scatter(exponents, exponentsOG)
+# plt.title('offset method comparison')
+# plt.xlabel('Fooof calculated value')
+# plt.ylabel('Voytek 2015 calcualted value')
+# plt.grid(True)
+# plt.show()
 
-# Perform Pearson correlation test
-correlation_coefficient, p_value = pearsonr(exponents, exponentsOG)
+# # Perform Pearson correlation test
+# correlation_coefficient, p_value = pearsonr(exponents, exponentsOG)
 
-# Print the correlation results
-print(f"Pearson Correlation Coefficient: {correlation_coefficient}")
-print(f"P-value: {p_value}")
+# # Print the correlation results
+# print(f"Pearson Correlation Coefficient: {correlation_coefficient}")
+# print(f"P-value: {p_value}")
 

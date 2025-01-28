@@ -91,7 +91,7 @@ results <- results[[1]]
 # results2 <- results2[[1]]
 
 repeats = 150
-savePath = "R:\\MSS\\Johnson_Lab\\dtf8829\\GitHub\\SheffieldAutismBiomarkers\\bootstrapAnalysis\\"
+savePath = 'G:\\My Drive\\GitHub\\SheffieldAutismBiomarkers\\bootstrapAnalysis\\'
 
 #what's the stability of the large effect sizes for diagnosis? 
 if(!file.exists(paste(savePath, "Diag_stab.csv", sep = ''))){

@@ -17,7 +17,16 @@ savedir = [prefix 'FIGURES/'];
 summaryDatSave = [prefix 'SUMDAT/'];
 
 filenames = dir(fullfile(summaryDatSave,'*.mat'));
-
+allFooofRes = dir(fullfile(prefix, 'testPSDs\Complete', '*.csv'));
+splitNames = cellfun(@(x) strsplit(x, '_'), {allFooofRes.name},...
+    'UniformOutput',false)';
+for ii =1:length(allFooofRes)
+    nameBits = splitNames{ii};
+    allFooofRes(ii).ID = nameBits{1}; 
+    allFooofRes(ii).type = nameBits{2}; 
+    chan = strsplit(nameBits{3}, '.csv'); 
+    allFooofRes(ii).chan = str2double(chan{1});
+end
 %frequency params
 frex = logspace(log10(2),log10(80),100);
 transforms = [1,2,3,4]; 
@@ -89,13 +98,26 @@ HF_pac = [0, 4, 9, 21];
 LF_names = {'del', 'the', 'al', 'bet'}; 
 HF_names = {'bet', 'gL', 'gH'}; 
 
+errorLog = []; 
 
 for ii = 1:length(filenames)
     ii
   try  
   %% load the file
   data = load([filenames(ii).folder '/' filenames(ii).name]).data;
-    
+
+  %% get fooof based 1/f stats
+    idx = cellfun(@(x) strcmp(x, data.key), {allFooofRes.ID}); 
+    curFooof = allFooofRes(idx,:); 
+    if length(curFooof) ~= 32
+        errorLog =[errorLog, ii]; 
+    else
+        for chan = 1:32
+            T = readtable([curFooof(chan).folder '/' curFooof(chan).name]);
+            data.slopeValsLog(curFooof(chan).chan, 1) = T.exponent(1); 
+            data.slopeValsLog(curFooof(chan).chan, 2) = T.offset(1); 
+        end
+    end
   %% basic demographics
   %data set
   filenames(ii).dataSet = data.dataSet; 
@@ -200,11 +222,6 @@ for ii = 1:length(filenames)
         filenames(ii).(['logPowAsym_' freqNames{fi-1} '_' asymNames{asi}]) = meanPow; 
   end
   end
-
-  %% channel power better to do as a 
-
-
-
 
   %% regional 1/f slope fit
   logSlope = data.slopeValsLog(:,1);
@@ -469,7 +486,7 @@ end
 %% save out the final struct as a .csv
 
 
-writetable(struct2table(filenames), 'R:\MSS\Johnson_Lab\dtf8829\GitHub\SheffieldAutismBiomarkers\autismBiomarkersAllData3.csv')
+writetable(struct2table(filenames), 'G:\My Drive\GitHub\SheffieldAutismBiomarkers\autismBiomarkersAllData3.csv')
 
 
 
