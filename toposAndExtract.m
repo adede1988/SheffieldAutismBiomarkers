@@ -3,7 +3,7 @@
 %% recreating topo plots: 
 
 
-datLoc = 'H:\SUMDAT';
+datLoc = 'F:\SUMDAT';
 codeLoc = 'G:\My Drive\GitHub\SheffieldAutismBiomarkers';
 addpath(codeLoc)
 sumDat = dir(datLoc);
@@ -55,38 +55,38 @@ parfor ii = 1:length(sumDat)
         end
 
         %store channel specific psds 
-        % for chan = 1:32
-        %     %raw
-        %     T = table(psd(chan,:)', frex');
-        % 
-        %     % name columns
-        %     T.Properties.VariableNames = {'power', 'frex'};
-        % 
-        %     % Save the table as a CSV file
-        %     writetable(T, ['H:\testPSDs/' curDat.key ...
-        %         '_rawPow_' num2str(chan) '.csv']);
-        % 
-        %     %rel
-        %     T = table(psdRel(chan,:)', frex');
-        % 
-        %     % name columns
-        %     T.Properties.VariableNames = {'power', 'frex'};
-        % 
-        %     % Save the table as a CSV file
-        %     writetable(T, ['H:\testPSDs/' curDat.key ...
-        %         '_relPow_' num2str(chan) '.csv']);
-        % 
-        %     %log
-        %     T = table(psdLog(chan,:)', frex');
-        % 
-        %     % name columns
-        %     T.Properties.VariableNames = {'power', 'frex'};
-        % 
-        %     % Save the table as a CSV file
-        %     writetable(T, ['H:\testPSDs/' curDat.key ...
-        %         '_logPow_' num2str(chan) '.csv']);
-        % 
-        % end
+        for chan = 1:32
+            %raw
+            T = table(psd(chan,:)', frex');
+
+            % name columns
+            T.Properties.VariableNames = {'power', 'frex'};
+
+            % Save the table as a CSV file
+            writetable(T, ['H:\testPSDs/' curDat.key ...
+                '_rawPow_' num2str(chan) '.csv']);
+
+            %rel
+            T = table(psdRel(chan,:)', frex');
+
+            % name columns
+            T.Properties.VariableNames = {'power', 'frex'};
+
+            % Save the table as a CSV file
+            writetable(T, ['H:\testPSDs/' curDat.key ...
+                '_relPow_' num2str(chan) '.csv']);
+
+            %log
+            T = table(psdLog(chan,:)', frex');
+
+            % name columns
+            T.Properties.VariableNames = {'power', 'frex'};
+
+            % Save the table as a CSV file
+            writetable(T, ['H:\testPSDs/' curDat.key ...
+                '_logPow_' num2str(chan) '.csv']);
+
+        end
 
 
     % end

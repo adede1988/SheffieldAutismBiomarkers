@@ -13,7 +13,7 @@ from fooof import FOOOF
 # from scipy.stats import pearsonr 
 
 # Define the directory containing your CSV files
-folder_path = 'H:/testPSDs'  # Update this to your folder path
+folder_path = 'F:/testPSDs2'  # Update this to your folder path
 
 # Create an empty list to store exponents and offsets
 results = []

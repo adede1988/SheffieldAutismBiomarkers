@@ -75,7 +75,7 @@ function [rawMeans,MI,pacSig,phasePref, MINull] = chanPAC(chanDat)
     
                 %filter 
                 fDat = ifft( fftDat.*fx').';
-                fDat = angle(fDat(:,size(chanDat.data,2)+1:size(chanDat.data,2)*2))+pi; 
+                fDat = angle(hilbert(real(fDat(:,size(chanDat.data,2)+1:size(chanDat.data,2)*2))))+pi; 
 
                 for HF = 1:length(highFrex)
                     s  = hfSTDs(HF)*(2*pi-1)/(4*pi); % normalized width
@@ -85,7 +85,7 @@ function [rawMeans,MI,pacSig,phasePref, MINull] = chanPAC(chanDat)
         
                     %filter 
                     fDatHF = ifft( fftDat.*fx').';
-                    fDatHF = abs(2*fDatHF(:, size(chanDat.data,2)+1:size(chanDat.data,2)*2));
+                    fDatHF = abs(hilbert(real(fDatHF(:, size(chanDat.data,2)+1:size(chanDat.data,2)*2))));
                     
                     %get the mean binned amplitude of the HF signal in
                     %phase bins of the LF signal, organized as 
@@ -120,7 +120,7 @@ function [rawMeans,MI,pacSig,phasePref, MINull] = chanPAC(chanDat)
     MI =    reshape(cell2mat(arrayfun(@(y) ...
                                     arrayfun(@(x) sum(rawMeans(x,y,:).*log(rawMeans(x,y,:) ./ (1/18))),...
                                     1:length(lowFrex)),...
-                        1:length(highFrex), 'uniformoutput', false)), [10,21]);
+                        1:length(highFrex), 'uniformoutput', false)), [10,21]) ./ log(18);
 
     %n = null shuffle add n as another looping variable to represent the
     %null shuffle
@@ -130,7 +130,7 @@ function [rawMeans,MI,pacSig,phasePref, MINull] = chanPAC(chanDat)
                                     arrayfun(@(x) sum(nullMeans(n,x,y,:).*log(nullMeans(n,x,y,:) ./ (1/18))),...
                                     1:length(lowFrex)),...
                             1:length(highFrex), 'uniformoutput', false)), [10,21]), ...
-                         1:200, 'uniformoutput', false)), [10,21,200]);
+                         1:200, 'uniformoutput', false)), [10,21,200]) ./ log(18);
 
     
     %ask whether thet observed value is greater than the 99th percentile. 

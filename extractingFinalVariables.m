@@ -5,7 +5,7 @@
 
 
 
-prefix = 'H:\'; %subNum = 1; chan = 1; 
+prefix = 'F:\'; %subNum = 1; chan = 1; 
 %HPC: 
 % prefix = '/shared/dede_group/User/pc1aod/';
 
@@ -17,14 +17,15 @@ savedir = [prefix 'FIGURES/'];
 summaryDatSave = [prefix 'SUMDAT/'];
 
 filenames = dir(fullfile(summaryDatSave,'*.mat'));
-allFooofRes = dir(fullfile(prefix, 'testPSDs\Complete', '*.csv'));
+allFooofRes = dir(fullfile(prefix, 'testPSDs2\Complete', '*.csv'));
 splitNames = cellfun(@(x) strsplit(x, '_'), {allFooofRes.name},...
     'UniformOutput',false)';
 for ii =1:length(allFooofRes)
     nameBits = splitNames{ii};
     allFooofRes(ii).ID = nameBits{1}; 
-    allFooofRes(ii).type = nameBits{2}; 
-    chan = strsplit(nameBits{3}, '.csv'); 
+    allFooofRes(ii).eyes = nameBits{2}; 
+    allFooofRes(ii).type = nameBits{3}; 
+    chan = strsplit(nameBits{4}, '.csv'); 
     allFooofRes(ii).chan = str2double(chan{1});
 end
 %frequency params
@@ -33,7 +34,7 @@ transforms = [1,2,3,4];
 numfrex = length(frex); 
 stds = linspace(2,5,numfrex);
 
-exampleDat = load('H:\SUMDAT\biomarkCon_1_1.mat').data; 
+exampleDat = load('F:\SUMDAT\biomarkCon_1_1.mat').data; 
 labels = exampleDat.labels; 
 Th = exampleDat.Th; 
 Rd = exampleDat.Rd; 
@@ -107,7 +108,8 @@ for ii = 1:length(filenames)
   data = load([filenames(ii).folder '/' filenames(ii).name]).data;
 
   %% get fooof based 1/f stats
-    idx = cellfun(@(x) strcmp(x, data.key), {allFooofRes.ID}); 
+    idx = cellfun(@(x, y) strcmp(x, data.key) & strcmp(y, data.eyes), ...
+                    {allFooofRes.ID}, {allFooofRes.eyes}); 
     curFooof = allFooofRes(idx,:); 
     if length(curFooof) ~= 32
         errorLog =[errorLog, ii]; 
@@ -473,7 +475,7 @@ for ii = 1:length(filenames)
 
   catch
 
-
+    errorLog = [errorLog ii]; 
   end
 
 
@@ -486,7 +488,7 @@ end
 %% save out the final struct as a .csv
 
 
-writetable(struct2table(filenames), 'G:\My Drive\GitHub\SheffieldAutismBiomarkers\autismBiomarkersAllData3.csv')
+writetable(struct2table(filenames), 'G:\My Drive\GitHub\SheffieldAutismBiomarkers\autismBiomarkersAllData4.csv')
 
 
 
